@@ -326,25 +326,28 @@ Effects use pooled SVG groups and transform/opacity animation only.
 
 ## 15. Asset Manifest
 
-Update `Status`, source file, and final license during implementation.
+Every shipped visual or procedural audio source must appear here. All listed art is drawn as
+project-specific vector code: no traced photographs, copied cartoon artwork, stock illustration,
+recorded audio, remote source, or embedded raster is shipped.
 
-| Asset Family | Planned Source | Status | License/Attribution |
-|--------------|----------------|--------|---------------------|
-| Turtle Mitch rig | Project-original SVG | Planned | MIT project asset |
-| Elaine Chao cockpit rig | Project-original SVG | Planned | MIT project asset |
-| Cartoon helicopter/flag | Project-original SVG | Planned | MIT project asset |
-| Money bags | Project-original SVG | Planned | MIT project asset |
-| Capitol vignette | Project-original SVG | Planned | MIT project asset |
-| Twelve crowd body families | Project-original SVG | Planned | MIT project asset |
-| Crowd accessories/props | Project-original SVG | Planned | MIT project asset |
-| Washington scene | Project-original SVG | Planned | MIT project asset |
-| Kentucky fair scene | Project-original SVG | Planned | MIT project asset |
-| Airport scene | Project-original SVG | Planned | MIT project asset |
-| UI icons/lettering | Project-original SVG/CSS | Planned | MIT project asset |
-| Visual effects | Project-original SVG | Planned | MIT project asset |
-| Sound cues | Synthesized at runtime | Planned | Project-original parameters/code |
-| Any recorded sound | Not approved for v1 | Excluded | Must be reviewed before use |
-| Fonts | System font stacks | Planned | No bundled font asset |
+| Asset family | Author/source | Owning source path | License | Attribution | Modification | Status |
+|---|---|---|---|---|---|---|
+| Turtle Mitch rig | Project-original inline SVG | `src/render/art/mitch.ts` | MIT project asset | None | Original vector anatomy and pose joints | Shipped |
+| Elaine cockpit rig | Project-original inline SVG | `src/render/art/elaine.ts` | MIT project asset | None | Original respectful simplified bust | Shipped |
+| Cartoon helicopter and PRC flag motif | Project-original inline SVG; national-flag colors/motif | `src/render/art/helicopter.ts` | MIT project asset / public national flag depiction | None | Original toy-like vehicle and hand-authored star paths | Shipped |
+| Money-bag variants | Project-original inline SVG | `src/render/art/money.ts` | MIT project asset | None | Original bags, satchel, and generic dollar marks | Shipped |
+| Capitol vignette | Project-original inline SVG | `src/render/art/capitol.ts` | MIT project asset | None | Original simplified cartoon architecture | Shipped |
+| Crowd body-part library | Project-original inline SVG | `src/render/art/crowd.ts` | MIT project asset | None | Twelve modular silhouette families and accessories | Shipped |
+| Shared SVG art utilities | Project-original code | `src/render/art/shared.ts` | MIT project asset | None | Safe DOM construction and original palette helpers | Shipped |
+| Washington scene/background/props | Project-original inline SVG | `src/render/stage-renderer.ts` | MIT project asset | None | Original street, buildings, transit, trees, and effects | Shipped |
+| UI, title illustration, and lettering | Project-original HTML/CSS/inline SVG | `public/index.html`, `public/styles.css` | MIT project asset | None | Original controls, copy layout, and title vignette | Shipped |
+| Favicon | Project-original inline SVG | `public/favicon.svg` | MIT project asset | None | Original local icon | Shipped |
+| Visual effects and cutscene composition | Project-original inline SVG/code | `src/render/cutscenes/sequence.ts`, `src/render/cutscenes/capture.ts`, `src/render/cutscenes/escape.ts` | MIT project asset | None | Original pooled effects and outcome choreography | Implemented — owner review pending |
+| Sound cues | Synthesized at runtime | `src/audio/audio-engine.ts`, `src/audio/cues.ts` | Project-original parameters/code | None | Oscillator/noise/envelope synthesis only | Implemented — owner review pending |
+| Kentucky fair scene | Project-original inline SVG | Not yet implemented | MIT project asset | None | Pending Phase 4 | Planned |
+| Airport scene | Project-original inline SVG | Not yet implemented | MIT project asset | None | Pending Phase 4 | Planned |
+| Any recorded sound | Not approved for v1 | None | N/A | N/A | No recorded sound is shipped | Excluded |
+| Fonts | System font stacks | `public/styles.css` | Platform-provided | N/A | No bundled or remote font | Shipped |
 
 ## 16. Art Approval Gate
 
@@ -359,3 +362,7 @@ Before Phase 3 is considered complete, human review must approve:
 - Crowd diversity feels natural and no modular combination creates offensive imagery.
 - No scene or target design resembles Where's Waldo protected visual identity.
 - All manifest entries are complete and compatible with repository distribution.
+
+Implementation review completed at desktop and 667×375 landscape scale on 2026-07-31. Owner sign-off
+on the caricature, flag treatment, outcome timing, and published copy remains required before a public
+release.

@@ -3,6 +3,13 @@ import type { GameState } from '../core/types';
 export interface UiRenderOptions {
   portraitAllowed: boolean;
   visibilityCountdownMs: number;
+  restartConfirmationOpen?: boolean;
+  creditsOpen?: boolean;
+  outcome?: {
+    kind: 'capture' | 'escape';
+    beatId: string | null;
+    canSkip: boolean;
+  } | null;
 }
 
 interface UiNodes {
@@ -18,10 +25,13 @@ interface UiNodes {
   roundCardKicker: HTMLElement;
   roundCardTitle: HTMLElement;
   pauseCard: HTMLElement;
+  restartCard: HTMLElement;
   visibilityCard: HTMLElement;
   visibilityCardKicker: HTMLElement;
   visibilityCardTitle: HTMLElement;
   gameOverCard: HTMLElement;
+  creditsCard: HTMLElement;
+  outcomeSkip: HTMLButtonElement;
   footerInstruction: HTMLElement;
   gameStatus: HTMLElement;
   resultRounds: HTMLElement;
@@ -86,10 +96,13 @@ export class UiRenderer {
       roundCardKicker: requireNode<HTMLElement>('#round-card-kicker'),
       roundCardTitle: requireNode<HTMLElement>('#round-card-title'),
       pauseCard: requireNode<HTMLElement>('#pause-card'),
+      restartCard: requireNode<HTMLElement>('#restart-card'),
       visibilityCard: requireNode<HTMLElement>('#visibility-card'),
       visibilityCardKicker: requireNode<HTMLElement>('#visibility-card-kicker'),
       visibilityCardTitle: requireNode<HTMLElement>('#visibility-card-title'),
       gameOverCard: requireNode<HTMLElement>('#game-over-card'),
+      creditsCard: requireNode<HTMLElement>('#credits-card'),
+      outcomeSkip: requireNode<HTMLButtonElement>('#outcome-skip'),
       footerInstruction: requireNode<HTMLElement>('#footer-instruction'),
       gameStatus: requireNode<HTMLElement>('#game-status'),
       resultRounds: requireNode<HTMLElement>('#result-rounds'),
@@ -127,7 +140,9 @@ export class UiRenderer {
     this.nodes.roundCardKicker.textContent = `ROUND ${state.round}`;
     this.nodes.roundCardTitle.textContent = sceneTitle;
     this.nodes.roundCard.hidden = state.mode !== 'round_intro' || !state.sceneId;
-    this.nodes.pauseCard.hidden = state.mode !== 'paused';
+    this.nodes.pauseCard.hidden =
+      state.mode !== 'paused' || options.restartConfirmationOpen === true;
+    this.nodes.restartCard.hidden = options.restartConfirmationOpen !== true;
     this.nodes.visibilityCard.hidden = options.visibilityCountdownMs <= 0;
     this.nodes.visibilityCardKicker.textContent =
       options.visibilityCountdownMs > 1000
@@ -138,6 +153,10 @@ export class UiRenderer {
     this.nodes.visibilityCardTitle.textContent =
       options.visibilityCountdownMs > 500 ? 'Mitch is moving again…' : 'GO!';
     this.nodes.gameOverCard.hidden = state.mode !== 'game_over';
+    this.nodes.creditsCard.hidden = options.creditsOpen !== true;
+    this.nodes.outcomeSkip.hidden = options.outcome?.canSkip !== true;
+    this.nodes.root.dataset.outcome = options.outcome?.kind ?? '';
+    this.nodes.root.dataset.outcomeBeat = options.outcome?.beatId ?? '';
     this.nodes.footerInstruction.textContent = `Find the turtle. Wrong clicks: ${10 - state.clicksRemaining}/10.`;
 
     const accuracy =

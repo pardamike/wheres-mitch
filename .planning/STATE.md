@@ -6,16 +6,16 @@ See `.planning/PROJECT.md` and `HANDOFF.md`.
 
 **Core value:** Finding a constantly moving Turtle Mitch inside a living scene must be funny,
 initially fair, and immediately satisfying to replay.  
-**Current focus:** Phase 3 — Signature Satire And Cutscenes
+**Current focus:** Phase 4 — Scene Deck And Variety
 
 ## Status
 
 - **Milestone:** v1
-- **Phase:** 3 of 5
-- **State:** Phase 2 shipped and verified; signature satire, outcomes, and audio next
+- **Phase:** 4 of 5
+- **State:** Phase 3 technically verified; scene deck implementation next
 - **Plans:** 15 prepared across five phases
 - **Implementation commits:** 2
-- **Requirements:** 24 validated, 24 pending, 48 mapped
+- **Requirements:** 34 validated, 14 pending, 48 mapped
 
 ## Locked Decisions
 
@@ -28,19 +28,20 @@ initially fair, and immediately satisfying to replay.
 
 ## Session Continuity
 
-**Stopped at:** Phase 2 shipped through the full GSD verify gate. The Washington scene now has a
-validated route graph, deterministic crowd behavior, continuous Mitch travel/hiding, real SVG
-occlusion, clamped clock/visibility pause, and a 96-actor performance profile. `npm run verify`
-passed with 36 unit tests, nine hosted Chromium checks, and the direct-file no-network smoke test.
-**Resume from:** Execute Phase 3 in plan order: final satire art/copy and manifest, Capitol return,
-helicopter escape, and procedural audio.
-**Blocking gate:** None. Do not deploy; commit/push cohesive verified game milestones directly to
-the `main` branch.
+**Stopped at:** Phase 3 technically verified through the full GSD gate. The game now has original
+SVG rigs, fictional-satire framing/credits/controls, sequenced Capitol capture and cartoon
+helicopter escape outcomes, and gesture-unlocked procedural audio. `npm run verify` passed with 45
+unit tests, 16 hosted Chromium checks, and the direct-file no-network smoke test.
+**Resume from:** Execute Phase 4 in plan order: scene contract/shuffle bag, Kentucky fair, then
+airport. Preserve the Phase 3 shared rigs and outcome integration.
+**Review gate:** Owner visual/tone sign-off for Phase 3 art and outcomes remains pending before a
+public release. This does not authorize any deployment. Commit/push cohesive verified game
+milestones directly to `main`.
 
 ## Next Action
 
-Read and execute the Phase 3 plan set in dependency order. Keep this diary to concise
+Read and execute the Phase 4 plan set in dependency order. Keep this diary to concise
 milestone/status updates only.
 
 ---
-*Last updated: 2026-07-31 at the Phase 2 verification boundary*
+*Last updated: 2026-07-31 at the Phase 3 technical-verification boundary*

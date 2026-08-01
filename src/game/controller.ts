@@ -4,8 +4,12 @@ import type { GameEvent } from '../core/events';
 import { createInitialState, isStageInteractive, reduceGame } from '../core/reducer';
 import { createRunSeed, deriveSeed, parseRoundFromSearch, parseSeedFromSearch } from '../core/rng';
 import type { MotionMode } from '../core/types';
+import { AudioEngine } from '../audio/audio-engine';
 import { createWashingtonScene } from '../scenes/washington';
-import { StageRenderer } from '../render/stage-renderer';
+import { captureBeats } from '../render/cutscenes/capture';
+import { escapeBeats } from '../render/cutscenes/escape';
+import { SequenceRunner, type SequenceSnapshot } from '../render/cutscenes/sequence';
+import { StageRenderer, type OutcomeRenderState } from '../render/stage-renderer';
 import { UiRenderer } from '../render/ui-renderer';
 import { mitchSnapshot } from '../world/mitch';
 import { reactToSceneMiss, updateScene, type SceneInstance } from '../world/scene';
@@ -25,6 +29,14 @@ interface GameControllerNodes {
   playScreen: HTMLElement;
 }
 
+interface ActiveOutcome {
+  kind: OutcomeRenderState['kind'];
+  token: number;
+  runner: SequenceRunner<void>;
+  snapshot: SequenceSnapshot;
+  lastCuedBeatId: string | null;
+}
+
 function requireControllerNode<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) {
@@ -37,7 +49,9 @@ function isFormControl(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLButtonElement ||
     target instanceof HTMLInputElement ||
-    target instanceof HTMLSelectElement
+    target instanceof HTMLSelectElement ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
   );
 }
 
@@ -58,10 +72,14 @@ export class GameController {
   private readonly stageRenderer: StageRenderer;
   private readonly uiRenderer: UiRenderer;
   private readonly clock = new SimulationClock();
+  private readonly audio = new AudioEngine();
   private frameHandle = 0;
   private modeElapsedMs = 0;
   private visibilityCountdownMs = 0;
   private portraitAllowed = false;
+  private restartConfirmationOpen = false;
+  private creditsOpen = false;
+  private outcome: ActiveOutcome | null = null;
   private readonly debugEnabled: boolean;
   private sceneTitle = 'WASHINGTON STREET';
   private detachVisibility: (() => void) | null = null;
@@ -76,6 +94,7 @@ export class GameController {
     this.stageRenderer = new StageRenderer(this.nodes.stage);
     this.uiRenderer = new UiRenderer();
     this.debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
+    this.audio.setMuted(!this.state.soundEnabled);
     if (document.hidden) {
       this.clock.pause('hidden');
     }
@@ -84,6 +103,7 @@ export class GameController {
   start(): void {
     this.nodes.startButton.addEventListener('click', (event) => {
       event.stopPropagation();
+      void this.audio.unlock();
       this.startRun();
     });
     for (const control of document.querySelectorAll<HTMLButtonElement>('button[data-action]')) {
@@ -94,7 +114,8 @@ export class GameController {
       });
     }
     attachStageInput(this.nodes.stage, {
-      isEnabled: () => isStageInteractive(this.state),
+      isEnabled: () =>
+        isStageInteractive(this.state) && !this.restartConfirmationOpen && !this.creditsOpen,
       onMiss: (point) => this.dispatch({ type: 'MISS', ...point }),
       onMitchCaught: () => this.dispatch({ type: 'MITCH_CAUGHT' }),
     });
@@ -111,9 +132,12 @@ export class GameController {
   destroy(): void {
     cancelAnimationFrame(this.frameHandle);
     this.detachVisibility?.();
+    void this.audio.dispose();
   }
 
   private startRun(): void {
+    this.restartConfirmationOpen = false;
+    this.creditsOpen = false;
     const requestedSeed = parseSeedFromSearch(window.location.search);
     const startingRound = parseRoundFromSearch(window.location.search) ?? undefined;
     this.dispatch({ type: 'START_RUN', runSeed: requestedSeed ?? createRunSeed(), startingRound });
@@ -135,11 +159,40 @@ export class GameController {
         this.dispatch({ type: 'SET_MOTION', mode: nextMotionMode(this.state.motionMode) });
         break;
       case 'restart':
+        if (
+          this.state.mode === 'round_intro' ||
+          this.state.mode === 'playing' ||
+          this.state.mode === 'paused'
+        ) {
+          this.restartConfirmationOpen = true;
+          this.render();
+        }
+        break;
+      case 'confirm-restart':
+        this.restartConfirmationOpen = false;
+        this.dispatch({ type: 'RESTART', runSeed: createRunSeed() });
+        break;
+      case 'cancel-restart':
+        this.restartConfirmationOpen = false;
+        this.render();
+        break;
       case 'search-again':
         this.dispatch({ type: 'RESTART', runSeed: createRunSeed() });
         break;
       case 'back-title':
+        this.restartConfirmationOpen = false;
         this.dispatch({ type: 'BACK_TO_TITLE' });
+        break;
+      case 'help':
+        this.creditsOpen = true;
+        this.render();
+        break;
+      case 'close-help':
+        this.creditsOpen = false;
+        this.render();
+        break;
+      case 'skip-outcome':
+        this.skipOutcome();
         break;
       case 'continue-portrait':
         this.portraitAllowed = true;
@@ -148,9 +201,26 @@ export class GameController {
       default:
         break;
     }
+    if (action !== 'mute' && action !== 'title-sound' && action !== 'skip-outcome') {
+      this.audio.cue('ui');
+    }
   }
 
   private handleKeyboard(event: KeyboardEvent): void {
+    if (this.restartConfirmationOpen) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.handleAction('cancel-restart');
+      }
+      return;
+    }
+    if (this.creditsOpen) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.handleAction('close-help');
+      }
+      return;
+    }
     if (isFormControl(event.target)) {
       return;
     }
@@ -178,11 +248,15 @@ export class GameController {
     }
     if (next.mode === 'paused' && previous.mode !== 'paused') {
       this.clock.pause('manual');
+      void this.audio.suspend();
     }
     if (previous.mode === 'paused' && next.mode !== 'paused') {
       this.clock.resume('manual');
+      void this.audio.resume();
     }
     if (event.type === 'START_RUN' || event.type === 'RESTART') {
+      this.restartConfirmationOpen = false;
+      this.creditsOpen = false;
       this.clock.reset();
       if (document.hidden) {
         this.clock.pause('hidden');
@@ -191,8 +265,10 @@ export class GameController {
 
     if (event.type === 'MISS' && this.scene) {
       reactToSceneMiss(this.scene, event.x, event.y);
+      this.audio.cue('miss');
     }
     if (event.type === 'MITCH_CAUGHT' && next.lastCaptureMs !== null) {
+      this.audio.cue('catch');
       this.state = reduceGame(this.state, {
         type: 'SET_RECORDS',
         records: recordSuccessfulCatch(this.state.records, next.lastCaptureMs),
@@ -205,6 +281,7 @@ export class GameController {
       });
     }
     if (event.type === 'SET_SOUND') {
+      this.audio.setMuted(!event.enabled);
       this.state = reduceGame(this.state, {
         type: 'SET_RECORDS',
         records: withSoundEnabled(this.state.records, event.enabled),
@@ -217,6 +294,8 @@ export class GameController {
       });
     }
 
+    this.syncOutcome();
+
     if (
       (event.type === 'START_RUN' || event.type === 'RESTART') &&
       this.state.mode === 'round_intro'
@@ -225,8 +304,38 @@ export class GameController {
     }
     if (event.type === 'BACK_TO_TITLE') {
       this.scene = null;
+      this.creditsOpen = false;
     }
     this.render();
+  }
+
+  private syncOutcome(): void {
+    const kind =
+      this.state.mode === 'player_capture'
+        ? 'capture'
+        : this.state.mode === 'mitch_escape'
+          ? 'escape'
+          : null;
+    if (!kind) {
+      if (this.outcome) {
+        this.outcome.runner.cancel(this.outcome.token);
+        this.outcome = null;
+      }
+      return;
+    }
+    if (this.outcome?.kind === kind && this.outcome.token === this.state.outcomeToken) {
+      return;
+    }
+    this.outcome?.runner.cancel(this.outcome.token);
+    const runner = new SequenceRunner(kind === 'capture' ? captureBeats : escapeBeats);
+    this.outcome = {
+      kind,
+      token: this.state.outcomeToken,
+      runner,
+      snapshot: runner.start(this.state.outcomeToken, undefined, this.prefersReducedMotion()),
+      lastCuedBeatId: null,
+    };
+    this.cueOutcomeBeat();
   }
 
   private prepareRound(): void {
@@ -247,6 +356,7 @@ export class GameController {
       );
       if (this.visibilityCountdownMs === 0) {
         this.clock.resume('visibility-countdown');
+        void this.audio.resume();
       }
       this.render();
     }
@@ -258,22 +368,25 @@ export class GameController {
           updateScene(this.scene, simulationDeltaMs);
         }
       }
+      if (this.outcome) {
+        const previousBeatId = this.outcome.snapshot.beatId;
+        const skipWasAvailable = this.outcome.snapshot.elapsedMs >= 1000;
+        this.outcome.snapshot = this.outcome.runner.advance(simulationDeltaMs, undefined);
+        this.cueOutcomeBeat();
+        const outcomeUiChanged =
+          this.outcome.snapshot.beatId !== previousBeatId ||
+          (!skipWasAvailable && this.outcome.snapshot.elapsedMs >= 1000);
+        this.resolveCompletedOutcome();
+        if (outcomeUiChanged && this.outcome) {
+          this.render();
+        }
+      }
       if (
         this.state.mode === 'round_intro' &&
         this.state.sceneId &&
         this.modeElapsedMs >= this.introDuration()
       ) {
         this.dispatch({ type: 'ROUND_INTRO_COMPLETE' });
-      } else if (
-        this.state.mode === 'player_capture' &&
-        this.modeElapsedMs >= this.captureDuration()
-      ) {
-        this.dispatch({ type: 'CAPTURE_COMPLETE' });
-      } else if (
-        this.state.mode === 'mitch_escape' &&
-        this.modeElapsedMs >= this.escapeDuration()
-      ) {
-        this.dispatch({ type: 'ESCAPE_COMPLETE' });
       } else if (this.state.mode === 'round_transition' && this.modeElapsedMs >= 280) {
         this.prepareRound();
       }
@@ -281,8 +394,8 @@ export class GameController {
     this.stageRenderer.render(
       this.state,
       this.clock.elapsedMs,
-      this.modeElapsedMs,
       this.prefersReducedMotion(),
+      this.outcome ? { kind: this.outcome.kind, snapshot: this.outcome.snapshot } : null,
     );
     this.updateDebug();
     this.frameHandle = requestAnimationFrame((nextTimestamp) => this.frame(nextTimestamp));
@@ -290,6 +403,7 @@ export class GameController {
 
   private handleVisibilityHidden(): void {
     this.clock.pause('hidden');
+    void this.audio.suspend();
   }
 
   private handleVisibilityVisible(): void {
@@ -297,6 +411,8 @@ export class GameController {
     if (this.state.mode === 'playing' && !this.clock.reasons.includes('manual')) {
       this.visibilityCountdownMs = 1500;
       this.clock.pause('visibility-countdown');
+    } else if (!this.clock.reasons.includes('manual')) {
+      void this.audio.resume();
     }
     this.render();
   }
@@ -306,6 +422,15 @@ export class GameController {
     this.uiRenderer.render(this.state, this.sceneTitle, {
       portraitAllowed: this.portraitAllowed,
       visibilityCountdownMs: this.visibilityCountdownMs,
+      restartConfirmationOpen: this.restartConfirmationOpen,
+      creditsOpen: this.creditsOpen,
+      outcome: this.outcome
+        ? {
+            kind: this.outcome.kind,
+            beatId: this.outcome.snapshot.beatId,
+            canSkip: this.outcome.snapshot.elapsedMs >= 1000,
+          }
+        : null,
     });
     this.updateDebug();
   }
@@ -335,6 +460,16 @@ export class GameController {
         reasons: this.clock.reasons,
       }),
       reducedMotion: this.prefersReducedMotion(),
+      outcome: this.outcome
+        ? Object.freeze({
+            kind: this.outcome.kind,
+            token: this.outcome.token,
+            beatId: this.outcome.snapshot.beatId,
+            elapsedMs: this.outcome.snapshot.elapsedMs,
+            completed: this.outcome.snapshot.completed,
+          })
+        : null,
+      audio: this.audio.debugState,
     });
   }
 
@@ -350,11 +485,54 @@ export class GameController {
     return this.prefersReducedMotion() ? 500 : 900;
   }
 
-  private captureDuration(): number {
-    return this.prefersReducedMotion() ? 900 : 1450;
+  private skipOutcome(): void {
+    if (!this.outcome || this.outcome.snapshot.elapsedMs < 1000) {
+      return;
+    }
+    this.outcome.snapshot = this.outcome.runner.skip(undefined);
+    this.resolveCompletedOutcome();
+    this.render();
   }
 
-  private escapeDuration(): number {
-    return this.prefersReducedMotion() ? 900 : 1800;
+  private resolveCompletedOutcome(): void {
+    const outcome = this.outcome;
+    if (!outcome || !outcome.snapshot.completed || outcome.token !== this.state.outcomeToken) {
+      return;
+    }
+    this.outcome = null;
+    this.dispatch({ type: outcome.kind === 'capture' ? 'CAPTURE_COMPLETE' : 'ESCAPE_COMPLETE' });
+  }
+
+  private cueOutcomeBeat(): void {
+    const outcome = this.outcome;
+    if (!outcome || outcome.snapshot.beatId === outcome.lastCuedBeatId) {
+      return;
+    }
+    outcome.lastCuedBeatId = outcome.snapshot.beatId;
+    if (outcome.kind === 'capture') {
+      if (outcome.snapshot.beatId === 'dispatch') {
+        this.audio.cue('shell');
+      } else if (outcome.snapshot.beatId === 'stamp') {
+        this.audio.cue('capitol');
+      }
+      return;
+    }
+    switch (outcome.snapshot.beatId) {
+      case 'cash':
+        this.audio.cue('cash');
+        break;
+      case 'approach':
+      case 'helicopter-entry':
+        this.audio.cue('rotor');
+        break;
+      case 'rope':
+        this.audio.cue('rope');
+        break;
+      case 'escape':
+        this.audio.cue('escape');
+        break;
+      default:
+        break;
+    }
   }
 }

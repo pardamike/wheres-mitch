@@ -1,6 +1,14 @@
 import type { GameState, MissMarker } from '../core/types';
 import type { CrowdActor } from '../world/actor';
 import type { SceneInstance } from '../world/scene';
+import { createCapitolRig, type CapitolRig } from './art/capitol';
+import { createCrowdRig } from './art/crowd';
+import { createHelicopterRig, type HelicopterRig } from './art/helicopter';
+import { createMitchRig, type MitchRig } from './art/mitch';
+import { createMoneyBag, type MoneyBagRig } from './art/money';
+import { getCapturePresentation } from './cutscenes/capture';
+import { getEscapePresentation } from './cutscenes/escape';
+import type { SequenceSnapshot } from './cutscenes/sequence';
 import { clearSvg, createSvgElement, findSvgLayer, setTransform, svgText } from './svg-dom';
 
 interface ActorNode {
@@ -24,8 +32,22 @@ interface CutsceneNodes {
   spotlight: SVGCircleElement;
   headline: SVGTextElement;
   caption: SVGTextElement;
-  capitol: SVGGElement;
-  helicopter: SVGGElement;
+  captureMitch: MitchRig;
+  tubeOuter: SVGPathElement;
+  tubeInner: SVGPathElement;
+  stars: SVGGElement[];
+  capitol: CapitolRig;
+  stamp: SVGTextElement;
+  escapeLoad: SVGGElement;
+  escapeMitch: MitchRig;
+  money: MoneyBagRig[];
+  helicopter: HelicopterRig;
+  windLines: SVGPathElement[];
+}
+
+export interface OutcomeRenderState {
+  kind: 'capture' | 'escape';
+  snapshot: SequenceSnapshot;
 }
 
 const INK = '#172033';
@@ -359,177 +381,15 @@ function drawTree(id: string, x: number, y: number, scale: number): SVGGElement 
 }
 
 function drawActor(model: CrowdActor): SVGGElement {
-  const actor = createSvgElement('g', {
-    id: model.id,
-    'data-actor': model.routine,
-    'pointer-events': 'none',
-  });
-  addShape(actor, 'ellipse', { cx: 0, cy: 28, rx: 21, ry: 7, fill: '#172033', opacity: 0.16 });
-  addShape(actor, 'rect', {
-    x: -14,
-    y: -8,
-    width: 28,
-    height: 37,
-    rx: 9,
-    fill: model.color,
-    stroke: INK,
-    'stroke-width': 3,
-  });
-  addShape(actor, 'circle', {
-    cx: 0,
-    cy: -25,
-    r: 17,
-    fill: model.skin,
-    stroke: INK,
-    'stroke-width': 3,
-  });
-  addShape(actor, 'path', {
-    d: 'M-15-28q15-25 30 0v7h-30z',
-    fill: model.hair,
-    stroke: INK,
-    'stroke-width': 2.5,
-  });
-  addShape(actor, 'path', {
-    d: 'M-9 29v17M9 29v17',
-    stroke: INK,
-    'stroke-width': 4,
-    'stroke-linecap': 'round',
-  });
-  addShape(actor, 'path', {
-    d: 'M-14 4-27 19M14 4 27 19',
-    stroke: INK,
-    'stroke-width': 4,
-    'stroke-linecap': 'round',
-  });
-  if (model.accessory === 'hat') {
-    addShape(actor, 'path', {
-      d: 'M-20-39h40l-8-12H-9z',
-      fill: '#F2C14E',
-      stroke: INK,
-      'stroke-width': 2.5,
-    });
-  }
-  if (model.accessory === 'bag') {
-    addShape(actor, 'rect', {
-      x: 18,
-      y: 11,
-      width: 17,
-      height: 19,
-      rx: 3,
-      fill: '#765238',
-      stroke: INK,
-      'stroke-width': 2.5,
-    });
-  }
-  if (model.accessory === 'coffee') {
-    addShape(actor, 'rect', {
-      x: 23,
-      y: 14,
-      width: 8,
-      height: 16,
-      fill: PAPER,
-      stroke: INK,
-      'stroke-width': 2,
-    });
-  }
-  if (model.accessory === 'camera') {
-    addShape(actor, 'rect', {
-      x: 16,
-      y: 8,
-      width: 18,
-      height: 12,
-      rx: 2,
-      fill: '#4D718C',
-      stroke: INK,
-      'stroke-width': 2,
-    });
-  }
-  return actor;
+  return createCrowdRig(model).root;
 }
 
 function drawMitch(): { root: SVGGElement; hitTarget: SVGCircleElement } {
-  const root = createSvgElement('g', { id: 'mitch-root', 'data-game-target': 'mitch' });
-  addShape(root, 'ellipse', { cx: 0, cy: 50, rx: 73, ry: 16, fill: INK, opacity: 0.2 });
-  addShape(root, 'path', {
-    d: 'M-61 21-92 42M-44 42-65 67M53 22 84 43M41 44 61 68',
-    stroke: '#718C51',
-    'stroke-width': 18,
-    'stroke-linecap': 'round',
-  });
-  addShape(root, 'ellipse', {
-    cx: 0,
-    cy: 17,
-    rx: 79,
-    ry: 55,
-    fill: '#765238',
-    stroke: INK,
-    'stroke-width': 5,
-  });
-  addShape(root, 'path', {
-    d: 'M-58 17H58M-42-18 43 49M43-18-43 49',
-    stroke: '#9B744D',
-    'stroke-width': 4,
-    'stroke-linecap': 'round',
-  });
-  addShape(root, 'ellipse', {
-    cx: -74,
-    cy: 10,
-    rx: 34,
-    ry: 27,
-    fill: '#718C51',
-    stroke: INK,
-    'stroke-width': 4,
-  });
-  addShape(root, 'path', {
-    d: 'M-83 4q-9-65 39-68 40 4 31 59l-15 25-40-1z',
-    fill: '#F1C6A4',
-    stroke: INK,
-    'stroke-width': 4,
-  });
-  addShape(root, 'path', {
-    d: 'M-91-44q29-32 57-3l-6 16-50-1z',
-    fill: '#E4D1BB',
-    stroke: INK,
-    'stroke-width': 3,
-  });
-  addShape(root, 'path', {
-    d: 'M-72-28h12M-43-28h12',
-    stroke: INK,
-    'stroke-width': 3,
-    'stroke-linecap': 'round',
-  });
-  addShape(root, 'path', { d: 'M-73-27h15M-44-27h15', stroke: '#6E798D', 'stroke-width': 2 });
-  addShape(root, 'path', {
-    d: 'M-63-12q8 5 15 0',
-    fill: 'none',
-    stroke: '#A3443B',
-    'stroke-width': 3,
-    'stroke-linecap': 'round',
-  });
-  addShape(root, 'path', {
-    d: 'M-42-7 3 1-15 34-53 12z',
-    fill: '#273E68',
-    stroke: INK,
-    'stroke-width': 3,
-  });
-  addShape(root, 'path', {
-    d: 'M-27 1-17 22-6 1',
-    fill: '#C94A43',
-    stroke: INK,
-    'stroke-width': 2,
-  });
-  const hitTarget = createSvgElement('circle', {
-    cx: -42,
-    cy: -15,
-    r: 69,
-    fill: '#FFFFFF',
-    'fill-opacity': 0,
-    stroke: 'none',
-    'pointer-events': 'all',
-    'data-game-target': 'mitch',
-  });
-  root.append(hitTarget);
-  return { root, hitTarget };
+  const rig = createMitchRig({ id: 'mitch-root', interactive: true });
+  if (!rig.hitTarget) {
+    throw new Error('Interactive Mitch rig is missing its hit target.');
+  }
+  return { root: rig.root, hitTarget: rig.hitTarget };
 }
 
 function createMissPool(parent: SVGElement, count: number): MissEffectNode[] {
@@ -554,111 +414,6 @@ function createMissPool(parent: SVGElement, count: number): MissEffectNode[] {
     effects.push({ element, ring, cross, shownAtMs: Number.NEGATIVE_INFINITY, x: 0, y: 0 });
   }
   return effects;
-}
-
-function drawCapitol(parent: SVGElement): SVGGElement {
-  const capitol = createSvgElement('g', { transform: 'translate(955 130)', opacity: 0 });
-  addShape(capitol, 'path', {
-    d: 'M0 230h380L346 115l-55-34-101-79-101 79-55 34z',
-    fill: '#E9E7E0',
-    stroke: INK,
-    'stroke-width': 5,
-  });
-  addShape(capitol, 'path', {
-    d: 'M138 80q52-95 104 0z',
-    fill: '#E9E7E0',
-    stroke: INK,
-    'stroke-width': 5,
-  });
-  addShape(capitol, 'rect', {
-    x: 35,
-    y: 230,
-    width: 310,
-    height: 105,
-    fill: '#E9E7E0',
-    stroke: INK,
-    'stroke-width': 5,
-  });
-  addShape(capitol, 'rect', {
-    x: 163,
-    y: 238,
-    width: 54,
-    height: 97,
-    fill: '#273E68',
-    stroke: INK,
-    'stroke-width': 4,
-  });
-  for (let index = 0; index < 7; index += 1) {
-    addShape(capitol, 'rect', {
-      x: 57 + index * 42,
-      y: 245,
-      width: 17,
-      height: 67,
-      fill: '#AEB8C6',
-      stroke: INK,
-      'stroke-width': 2,
-    });
-  }
-  parent.append(capitol);
-  return capitol;
-}
-
-function drawHelicopter(parent: SVGElement): SVGGElement {
-  const helicopter = createSvgElement('g', { transform: 'translate(1550 140)', opacity: 0 });
-  addShape(helicopter, 'path', {
-    d: 'M0 105q15-87 133-87 115 0 139 87v39H0z',
-    fill: '#B82025',
-    stroke: INK,
-    'stroke-width': 6,
-  });
-  addShape(helicopter, 'path', {
-    d: 'M255 75h170l30 22-30 23H255z',
-    fill: '#B82025',
-    stroke: INK,
-    'stroke-width': 6,
-  });
-  addShape(helicopter, 'circle', {
-    cx: 456,
-    cy: 97,
-    r: 22,
-    fill: '#F2C14E',
-    stroke: INK,
-    'stroke-width': 4,
-  });
-  addShape(helicopter, 'path', {
-    d: 'M58 63h103v67H35q0-58 23-67z',
-    fill: '#A9D2E5',
-    stroke: INK,
-    'stroke-width': 4,
-  });
-  addShape(helicopter, 'rect', {
-    x: 183,
-    y: 59,
-    width: 61,
-    height: 42,
-    rx: 3,
-    fill: '#DE2910',
-    stroke: INK,
-    'stroke-width': 3,
-  });
-  addShape(helicopter, 'path', {
-    d: 'm194 69 7 2-5 5 1 8-7-5-7 5 2-8-6-5 8-2 2-7z',
-    fill: '#FFDE00',
-  });
-  addShape(helicopter, 'path', {
-    d: 'M112 18v-56M-5-42h235M112-42l-101-29M112-42l101-29',
-    stroke: INK,
-    'stroke-width': 8,
-    'stroke-linecap': 'round',
-  });
-  addShape(helicopter, 'path', {
-    d: 'M46 152h169M65 152l-18 26M198 152l17 26',
-    stroke: INK,
-    'stroke-width': 7,
-    'stroke-linecap': 'round',
-  });
-  parent.append(helicopter);
-  return helicopter;
 }
 
 function createCutscene(parent: SVGElement): CutsceneNodes {
@@ -696,11 +451,98 @@ function createCutscene(parent: SVGElement): CutsceneNodes {
     'font-size': 28,
     'font-weight': 800,
   });
-  root.append(dimmer, spotlight, headline, caption);
-  const capitol = drawCapitol(root);
-  const helicopter = drawHelicopter(root);
+  const tubeOuter = createSvgElement('path', {
+    fill: 'none',
+    stroke: '#C94A43',
+    'stroke-width': 34,
+    'stroke-linecap': 'round',
+    opacity: 0,
+  });
+  const tubeInner = createSvgElement('path', {
+    fill: 'none',
+    stroke: '#F7F0DE',
+    'stroke-width': 19,
+    'stroke-linecap': 'round',
+    opacity: 0,
+  });
+  const captureMitch = createMitchRig({ id: 'capture-mitch' });
+  const capitol = createCapitolRig('capture-capitol');
+  const stamp = svgText('RETURNED TO THE CAPITOL', {
+    x: 1125,
+    y: 692,
+    'text-anchor': 'middle',
+    fill: '#B82025',
+    stroke: PAPER,
+    'stroke-width': 2,
+    'paint-order': 'stroke',
+    'font-size': 29,
+    'font-weight': 900,
+    opacity: 0,
+  });
+  const stars = Array.from({ length: 7 }, (_, index) => {
+    const star = createSvgElement('g', { opacity: 0 });
+    addShape(star, 'path', {
+      d: 'M0-10 3-3 10 0 3 3 0 10-3 3-10 0-3-3z',
+      fill: '#F2C14E',
+      stroke: INK,
+      'stroke-width': 1.5,
+    });
+    star.setAttribute('data-star', String(index));
+    return star;
+  });
+  const escapeLoad = createSvgElement('g', { opacity: 0 });
+  const escapeMitch = createMitchRig({ id: 'escape-mitch' });
+  const money = [
+    createMoneyBag('small', 'money-small'),
+    createMoneyBag('large', 'money-large'),
+    createMoneyBag('satchel', 'money-satchel'),
+  ];
+  escapeLoad.append(escapeMitch.root, ...money.map((bag) => bag.root));
+  const helicopter = createHelicopterRig('escape-helicopter');
+  const windLines = Array.from({ length: 6 }, (_, index) =>
+    createSvgElement('path', {
+      d: `M${70 + index * 150} ${150 + (index % 3) * 62}h86`,
+      fill: 'none',
+      stroke: PAPER,
+      'stroke-width': 5,
+      'stroke-linecap': 'round',
+      opacity: 0,
+    }),
+  );
+  root.append(
+    dimmer,
+    spotlight,
+    tubeOuter,
+    tubeInner,
+    ...stars,
+    captureMitch.root,
+    capitol.root,
+    stamp,
+    ...windLines,
+    escapeLoad,
+    helicopter.root,
+    headline,
+    caption,
+  );
   parent.append(root);
-  return { root, dimmer, spotlight, headline, caption, capitol, helicopter };
+  return {
+    root,
+    dimmer,
+    spotlight,
+    headline,
+    caption,
+    captureMitch,
+    tubeOuter,
+    tubeInner,
+    stars,
+    capitol,
+    stamp,
+    escapeLoad,
+    escapeMitch,
+    money,
+    helicopter,
+    windLines,
+  };
 }
 
 export class StageRenderer {
@@ -720,6 +562,7 @@ export class StageRenderer {
   private bus: SVGGElement | null = null;
   private taxi: SVGGElement | null = null;
   private cutscene: CutsceneNodes | null = null;
+  private frozenSceneClockMs: number | null = null;
 
   constructor(private readonly stage: SVGSVGElement) {
     this.backgroundLayer = findSvgLayer(stage, 'background');
@@ -733,6 +576,8 @@ export class StageRenderer {
 
   buildWashington(scene: SceneInstance): SceneInstance {
     this.activeScene = scene;
+    this.activeMissId = 0;
+    this.frozenSceneClockMs = null;
     for (const layer of [
       this.backgroundLayer,
       this.ambientLayer,
@@ -781,12 +626,27 @@ export class StageRenderer {
     return scene;
   }
 
-  render(state: GameState, clockMs: number, modeElapsedMs: number, reducedMotion: boolean): void {
+  render(
+    state: GameState,
+    clockMs: number,
+    reducedMotion: boolean,
+    outcome: OutcomeRenderState | null = null,
+  ): void {
     if (!this.activeScene || !this.mitchRoot || !this.mitchHitTarget || !this.cutscene) {
       return;
     }
 
-    const seconds = clockMs / 1000;
+    const outcomeActive =
+      outcome !== null &&
+      ((outcome.kind === 'capture' && state.mode === 'player_capture') ||
+        (outcome.kind === 'escape' && state.mode === 'mitch_escape'));
+    if (outcomeActive && this.frozenSceneClockMs === null) {
+      this.frozenSceneClockMs = clockMs;
+    } else if (!outcomeActive) {
+      this.frozenSceneClockMs = null;
+    }
+    const sceneClockMs = this.frozenSceneClockMs ?? clockMs;
+    const seconds = sceneClockMs / 1000;
     const crowdMotion = reducedMotion ? 0.7 : 1;
     for (const actor of this.actorNodes) {
       const moving = actor.actor.pose === 'walk';
@@ -814,10 +674,10 @@ export class StageRenderer {
     }
 
     if (this.bus) {
-      setTransform(this.bus, `translate(${((clockMs * 0.025) % 1830) - 330} 460)`);
+      setTransform(this.bus, `translate(${((sceneClockMs * 0.025) % 1830) - 330} 460)`);
     }
     if (this.taxi) {
-      setTransform(this.taxi, `translate(${1210 - ((clockMs * 0.017) % 780)} 687)`);
+      setTransform(this.taxi, `translate(${1210 - ((sceneClockMs * 0.017) % 780)} 687)`);
     }
 
     const mitch = this.activeScene.mitch;
@@ -827,17 +687,18 @@ export class StageRenderer {
       this.mitchRoot,
       `translate(${mitch.position.x} ${mitch.position.y + mitchBob}) scale(${MITCH_SCALE})`,
     );
-    this.mitchRoot.setAttribute('opacity', state.mode === 'mitch_escape' ? '0.45' : '1');
+    this.mitchRoot.setAttribute('opacity', outcomeActive ? '0' : '1');
     this.mitchRoot.style.pointerEvents =
       state.mode === 'playing' && mitch.clickable ? 'all' : 'none';
     this.mitchHitTarget.setAttribute('r', String(69 * mitch.profile.hitboxScale));
 
     if (state.lastMiss && state.lastMiss.id !== this.activeMissId) {
-      this.showMiss(state.lastMiss, clockMs);
+      this.showMiss(state.lastMiss, sceneClockMs);
       this.activeMissId = state.lastMiss.id;
     }
-    this.updateMissEffects(clockMs);
-    this.updateCutscene(state, modeElapsedMs, reducedMotion);
+    this.effectsLayer.setAttribute('opacity', outcomeActive ? '0' : '1');
+    this.updateMissEffects(sceneClockMs);
+    this.updateCutscene(outcomeActive ? outcome : null, state);
   }
 
   private showMiss(marker: MissMarker, clockMs: number): void {
@@ -869,45 +730,165 @@ export class StageRenderer {
     }
   }
 
-  private updateCutscene(state: GameState, elapsedMs: number, reducedMotion: boolean): void {
+  private updateCutscene(outcome: OutcomeRenderState | null, state: GameState): void {
     const cutscene = this.cutscene;
     if (!cutscene) {
       return;
     }
-    const active = state.mode === 'player_capture' || state.mode === 'mitch_escape';
-    cutscene.root.setAttribute('display', active ? 'inline' : 'none');
-    if (!active) {
+    cutscene.root.setAttribute('display', outcome ? 'inline' : 'none');
+    if (!outcome || !this.activeScene) {
       return;
     }
-
-    const progress = Math.min(
-      1,
-      elapsedMs / (reducedMotion ? 900 : state.mode === 'player_capture' ? 1450 : 1800),
-    );
-    cutscene.dimmer.setAttribute('opacity', state.mode === 'player_capture' ? '0.53' : '0.62');
-    cutscene.spotlight.setAttribute(
-      'opacity',
-      state.mode === 'player_capture' ? String(0.14 + progress * 0.19) : '0',
-    );
-
-    if (state.mode === 'player_capture') {
-      cutscene.headline.textContent = 'FOUND HIM!';
-      cutscene.caption.textContent = 'Dispatching one very determined turtle…';
-      cutscene.capitol.setAttribute('opacity', String(Math.min(1, progress * 1.5)));
-      setTransform(
-        cutscene.capitol,
-        `translate(${955 - progress * 130} ${130 + Math.sin(progress * Math.PI) * -18}) scale(${0.85 + progress * 0.15})`,
-      );
-      cutscene.helicopter.setAttribute('opacity', '0');
+    cutscene.root.setAttribute('data-cutscene-kind', outcome.kind);
+    cutscene.root.setAttribute('data-cutscene-beat', outcome.snapshot.beatId ?? 'complete');
+    if (outcome.kind === 'capture') {
+      this.renderCapture(outcome.snapshot, state);
     } else {
-      cutscene.headline.textContent = 'MITCH GOT AWAY';
-      cutscene.caption.textContent = 'Something very cartoonish is happening…';
-      cutscene.capitol.setAttribute('opacity', '0');
-      cutscene.helicopter.setAttribute('opacity', String(Math.min(1, progress * 1.4)));
+      this.renderEscape(outcome.snapshot);
+    }
+  }
+
+  private renderCapture(snapshot: SequenceSnapshot, state: GameState): void {
+    const cutscene = this.cutscene;
+    const scene = this.activeScene;
+    if (!cutscene || !scene) {
+      return;
+    }
+    const visual = getCapturePresentation(snapshot, scene.mitch.position);
+    cutscene.dimmer.setAttribute('opacity', String(visual.dimOpacity));
+    cutscene.spotlight.setAttribute('cx', String(scene.mitch.position.x));
+    cutscene.spotlight.setAttribute('cy', String(scene.mitch.position.y - 22));
+    cutscene.spotlight.setAttribute('r', String(visual.spotlightRadius));
+    cutscene.spotlight.setAttribute('opacity', String(visual.spotlightOpacity));
+    cutscene.headline.textContent = visual.headline;
+    cutscene.caption.textContent =
+      visual.beatId === 'transition'
+        ? `Round ${state.round} cleared in ${state.roundAttempts} click${state.roundAttempts === 1 ? '' : 's'}.`
+        : visual.caption;
+    cutscene.headline.setAttribute('x', '720');
+    cutscene.headline.setAttribute('y', '164');
+    cutscene.headline.setAttribute('font-size', '75');
+    cutscene.caption.setAttribute('x', '720');
+    cutscene.caption.setAttribute('y', '222');
+    cutscene.caption.setAttribute('font-size', '28');
+
+    cutscene.captureMitch.root.setAttribute('opacity', '1');
+    setTransform(
+      cutscene.captureMitch.root,
+      `translate(${visual.mitchPosition.x} ${visual.mitchPosition.y}) rotate(${visual.mitchRotation}) scale(${visual.mitchScale})`,
+    );
+    this.applyMitchTuck(cutscene.captureMitch, visual.tuckProgress);
+    const tubePath = `M${scene.mitch.position.x} ${scene.mitch.position.y - 10} Q820 140 1125 575`;
+    cutscene.tubeOuter.setAttribute('d', tubePath);
+    cutscene.tubeOuter.setAttribute('opacity', String(visual.tubeOpacity));
+    cutscene.tubeInner.setAttribute('d', tubePath);
+    cutscene.tubeInner.setAttribute('opacity', String(visual.trailOpacity));
+    cutscene.capitol.root.setAttribute('opacity', String(visual.capitolOpacity));
+    setTransform(cutscene.capitol.root, `translate(969 278) scale(${visual.capitolScale * 0.8})`);
+    cutscene.stamp.setAttribute('opacity', String(visual.stampOpacity));
+    setTransform(
+      cutscene.stamp,
+      `translate(1125 692) rotate(-8) scale(${visual.stampScale}) translate(-1125 -692)`,
+    );
+    for (const [index, star] of cutscene.stars.entries()) {
+      const fraction = (index + 1) / (cutscene.stars.length + 1);
+      const x = scene.mitch.position.x + (1125 - scene.mitch.position.x) * fraction;
+      const y = scene.mitch.position.y - 18 - 118 * Math.sin(fraction * Math.PI);
+      star.setAttribute('opacity', String(visual.starsOpacity * (0.62 + (index % 3) * 0.12)));
       setTransform(
-        cutscene.helicopter,
-        `translate(${1550 - progress * 920} ${140 - Math.sin(progress * Math.PI) * 24})`,
+        star,
+        `translate(${x} ${y}) rotate(${index * 29}) scale(${0.9 + (index % 2) * 0.2})`,
       );
     }
+
+    this.hideEscapeNodes(cutscene);
+  }
+
+  private renderEscape(snapshot: SequenceSnapshot): void {
+    const cutscene = this.cutscene;
+    const scene = this.activeScene;
+    if (!cutscene || !scene) {
+      return;
+    }
+    const visual = getEscapePresentation(snapshot, scene.mitch.position);
+    cutscene.dimmer.setAttribute('opacity', String(visual.dimOpacity));
+    cutscene.spotlight.setAttribute('opacity', '0');
+    cutscene.headline.textContent = visual.headline;
+    cutscene.caption.textContent = visual.caption;
+    cutscene.headline.setAttribute('x', '342');
+    cutscene.headline.setAttribute('y', '130');
+    cutscene.headline.setAttribute('font-size', '62');
+    cutscene.caption.setAttribute('x', '342');
+    cutscene.caption.setAttribute('y', '178');
+    cutscene.caption.setAttribute('font-size', '21');
+    cutscene.captureMitch.root.setAttribute('opacity', '0');
+    cutscene.tubeOuter.setAttribute('opacity', '0');
+    cutscene.tubeInner.setAttribute('opacity', '0');
+    cutscene.capitol.root.setAttribute('opacity', '0');
+    cutscene.stamp.setAttribute('opacity', '0');
+    for (const star of cutscene.stars) {
+      star.setAttribute('opacity', '0');
+    }
+
+    cutscene.escapeLoad.setAttribute('opacity', String(visual.loadOpacity));
+    setTransform(
+      cutscene.escapeLoad,
+      `translate(${visual.loadPosition.x} ${visual.loadPosition.y}) rotate(${visual.loadRotation})`,
+    );
+    setTransform(cutscene.escapeMitch.root, `scale(${visual.mitchScale})`);
+    this.applyMitchTuck(cutscene.escapeMitch, visual.tuckProgress);
+    for (const [index, bag] of cutscene.money.entries()) {
+      const offset = [
+        [-58, 16],
+        [48, 14],
+        [5, 54],
+      ][index] ?? [0, 0];
+      bag.root.setAttribute('opacity', String(visual.moneyOpacity));
+      setTransform(
+        bag.root,
+        `translate(${offset[0]} ${offset[1]}) rotate(${(index - 1) * 8}) scale(${visual.moneyScale})`,
+      );
+    }
+    cutscene.helicopter.root.setAttribute('opacity', String(visual.helicopterOpacity));
+    setTransform(
+      cutscene.helicopter.root,
+      `translate(${visual.helicopterPosition.x} ${visual.helicopterPosition.y}) scale(${visual.helicopterScale})`,
+    );
+    setTransform(cutscene.helicopter.rotor, `rotate(${visual.rotorDegrees} 125 -34)`);
+    cutscene.helicopter.rope.setAttribute('opacity', String(visual.ropeOpacity));
+    cutscene.helicopter.rope.setAttribute('y2', String(145 + visual.ropeLength));
+    cutscene.helicopter.hook.setAttribute('opacity', String(visual.ropeOpacity));
+    setTransform(cutscene.helicopter.hook, `translate(0 ${145 + visual.ropeLength})`);
+    for (const [index, wind] of cutscene.windLines.entries()) {
+      wind.setAttribute('opacity', String(visual.windOpacity * (0.42 + (index % 2) * 0.18)));
+      setTransform(wind, `translate(${(visual.rotorDegrees % 42) - 21} 0)`);
+    }
+  }
+
+  private hideEscapeNodes(cutscene: CutsceneNodes): void {
+    cutscene.escapeLoad.setAttribute('opacity', '0');
+    cutscene.helicopter.root.setAttribute('opacity', '0');
+    cutscene.helicopter.rope.setAttribute('opacity', '0');
+    cutscene.helicopter.hook.setAttribute('opacity', '0');
+    for (const wind of cutscene.windLines) {
+      wind.setAttribute('opacity', '0');
+    }
+  }
+
+  private applyMitchTuck(rig: MitchRig, progress: number): void {
+    const tuck = Math.max(0, Math.min(1, progress));
+    const visible = 1 - tuck;
+    rig.head.setAttribute('opacity', String(visible));
+    rig.neck.setAttribute('opacity', String(visible));
+    rig.collar.setAttribute('opacity', String(visible));
+    rig.tie.setAttribute('opacity', String(visible));
+    rig.frontLegs.setAttribute('opacity', String(visible));
+    rig.backLegs.setAttribute('opacity', String(visible));
+    rig.shadow.setAttribute('opacity', String(0.2 * (1 - tuck * 0.55)));
+    setTransform(rig.head, `translate(${38 * tuck} ${19 * tuck}) scale(${1 - tuck * 0.66})`);
+    setTransform(rig.frontLegs, `translate(${-18 * tuck} ${12 * tuck}) scale(${1 - tuck * 0.55})`);
+    setTransform(rig.backLegs, `translate(${22 * tuck} ${10 * tuck}) scale(${1 - tuck * 0.55})`);
+    setTransform(rig.collar, `translate(${30 * tuck} ${15 * tuck}) scale(${1 - tuck * 0.55})`);
+    setTransform(rig.tie, `translate(${30 * tuck} ${15 * tuck}) scale(${1 - tuck * 0.55})`);
   }
 }

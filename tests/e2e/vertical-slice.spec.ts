@@ -4,7 +4,9 @@ async function startSeededRound(page: Page) {
   await page.goto('/?seed=324001&debug=1');
   await expect(page.getByRole('heading', { name: "WHERE'S MITCH?" })).toBeVisible();
   await expect(page.getByText('Ten clicks. One extremely evasive turtle.')).toBeVisible();
-  await expect(page.getByText('fictional political satire', { exact: false })).toBeVisible();
+  await expect(page.locator('#title-screen .disclaimer')).toContainText(
+    'fictional political satire',
+  );
   await page.getByRole('button', { name: 'START THE SEARCH' }).click();
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
 }
@@ -31,7 +33,9 @@ test.describe('Washington vertical slice', () => {
     await page.locator('#mitch-root').click({ force: true });
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
     await expect(page.locator('#clicks-remaining')).toHaveText('10');
-    await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
+    await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing', {
+      timeout: 8_000,
+    });
     await expect(page.locator('#round-number')).toHaveText('2');
     await expect(page.locator('#completed-rounds')).toHaveText('1');
   });
@@ -43,8 +47,10 @@ test.describe('Washington vertical slice', () => {
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'mitch_escape');
     await page.locator('#game-stage').click({ position: { x: 24, y: 24 } });
     await expect(page.locator('#clicks-remaining')).toHaveText('0');
+    await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'game_over', {
+      timeout: 9_000,
+    });
     await expect(page.getByRole('heading', { name: 'MITCH GOT AWAY' })).toBeVisible();
-    await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'game_over');
 
     await page.getByRole('button', { name: 'SEARCH AGAIN' }).click();
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');

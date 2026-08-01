@@ -28,12 +28,13 @@ fair at first, and immediately satisfying to replay.
   plus true pause/visibility suspension (Phase 2 verification).
 - [x] A measured 96-actor SVG performance profile with stable DOM counts at desktop and compact
   landscape sizes (Phase 2 verification; see `docs/PERFORMANCE.md`).
+- [x] Original Turtle Mitch/crowd/outcome art, visible fictional-satire framing, complete controls,
+  gesture-unlocked procedural audio, and fully sequenced Capitol-return/helicopter-escape outcomes
+  (Phase 3 technical verification; owner visual sign-off remains pending).
 
 ### Active
 
 - [ ] Three animated, procedurally varied settings populated by convincing crowd behavior.
-- [ ] Memorable Capitol-return and helicopter-escape outcome animations.
-- [ ] Original visual/audio assets and visible fictional-satire framing.
 - [ ] A dependency-free runtime that works from `file://`, Cloudflare Pages, and S3/CloudFront.
 - [ ] Local records, responsive controls, accessibility accommodations, and release-grade tests.
 
@@ -118,4 +119,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Decide whether more scenes improve the joke or only add maintenance.
 
 ---
-*Last updated: 2026-07-31 after Phase 2 living-world verification*
+*Last updated: 2026-07-31 after Phase 3 technical verification*

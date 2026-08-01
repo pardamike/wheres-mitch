@@ -103,6 +103,14 @@
             >
               ↻
             </button>
+            <button
+              type="button"
+              class="icon-button"
+              data-action="help"
+              aria-label="Help and credits"
+            >
+              ?
+            </button>
           </div>
         </header>
 
@@ -141,6 +149,27 @@
             <p id="visibility-card-kicker">READY</p>
             <strong id="visibility-card-title">Mitch is moving again…</strong>
           </div>
+          <div
+            id="restart-card"
+            class="stage-card restart-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="restart-card-title"
+            hidden
+          >
+            <p>END THIS RUN?</p>
+            <strong id="restart-card-title">Start over at round one?</strong>
+            <div class="pause-links">
+              <button type="button" class="text-button" data-action="cancel-restart">CANCEL</button>
+              <button
+                type="button"
+                class="primary-button danger-button"
+                data-action="confirm-restart"
+              >
+                RESTART RUN
+              </button>
+            </div>
+          </div>
           <div id="rotate-card" class="stage-card rotate-card" hidden>
             <p>FOR THE FULL SEARCH</p>
             <strong>Rotate your device.</strong>
@@ -148,6 +177,15 @@
               CONTINUE ANYWAY
             </button>
           </div>
+          <button
+            id="outcome-skip"
+            type="button"
+            class="text-button outcome-skip"
+            data-action="skip-outcome"
+            hidden
+          >
+            SKIP
+          </button>
         </div>
 
         <footer class="game-footer">
@@ -184,7 +222,43 @@
             SEARCH AGAIN
           </button>
           <button type="button" class="text-button" data-action="back-title">BACK TO TITLE</button>
+          <button type="button" class="text-button" data-action="help">HELP &amp; CREDITS</button>
         </section>
+      </section>
+
+      <section
+        id="credits-card"
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="credits-title"
+        hidden
+      >
+        <div class="modal-card-inner">
+          <p class="eyebrow">HELP &amp; CREDITS</p>
+          <h2 id="credits-title">HOW TO PLAY</h2>
+          <p>
+            Find Turtle Mitch before your ten clicks run out. Wrong clicks count; a visible Turtle
+            Mitch catch does not.
+          </p>
+          <p>
+            <strong>Shortcuts:</strong> Space pauses, M toggles sound, R opens restart, and Escape
+            closes this card or pauses play.
+          </p>
+          <p class="disclaimer">
+            Where's Mitch? is an absurd work of fictional political satire. All characters and
+            events are exaggerated and invented. This game is not affiliated with or endorsed by
+            Mitch McConnell, Elaine Chao, the U.S. Senate, the U.S. government, the Chinese
+            government, or any other depicted person or institution.
+          </p>
+          <p class="privacy-note">
+            Original project artwork and synthesized sound. No accounts, tracking, or network
+            required.
+          </p>
+          <button type="button" class="primary-button" data-action="close-help">
+            BACK TO THE GAME
+          </button>
+        </div>
       </section>
     </main>
   </body>

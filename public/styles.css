@@ -171,6 +171,15 @@ h2 {
   box-shadow: 0 1px 0 var(--blue-dark);
 }
 
+.danger-button {
+  background: var(--red);
+  box-shadow: 0 4px 0 var(--red-dark);
+}
+
+.danger-button:active {
+  box-shadow: 0 1px 0 var(--red-dark);
+}
+
 .text-button {
   min-height: 2.4rem;
   padding: 0.35rem 0.55rem;
@@ -337,6 +346,22 @@ h2 {
   background: color-mix(in srgb, var(--paper) 92%, var(--blue));
 }
 
+.restart-card {
+  z-index: 5;
+  background: color-mix(in srgb, var(--paper) 92%, #f7b8aa);
+}
+
+.outcome-skip {
+  position: absolute;
+  z-index: 6;
+  top: 0.7rem;
+  right: 0.7rem;
+  border: 2px solid var(--ink);
+  border-radius: 0.5rem;
+  background: var(--paper);
+  box-shadow: 0 2px 0 rgba(23, 32, 51, 0.2);
+}
+
 .rotate-card {
   z-index: 2;
 }
@@ -361,6 +386,33 @@ h2 {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+}
+
+.modal-card {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  background: rgba(17, 34, 61, 0.72);
+}
+
+.modal-card-inner {
+  width: min(100%, 44rem);
+  max-height: min(92dvh, 48rem);
+  overflow: auto;
+  border: 3px solid var(--ink);
+  border-radius: 1rem;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background: var(--white);
+  box-shadow: 0 0.9rem 0 rgba(23, 32, 51, 0.32);
+  color: var(--navy);
+  text-align: center;
+}
+
+.modal-card-inner .disclaimer {
+  text-align: left;
 }
 
 .result-stats {

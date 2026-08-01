@@ -49,14 +49,14 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Outcome Sequences
 
-- [ ] **OUT-01**: A successful catch freezes the active scene, spotlights Mitch, retracts his head,
+- [x] **OUT-01**: A successful catch freezes the active scene, spotlights Mitch, retracts his head,
   and transports the spinning shell to a recognizable cartoon Capitol.
-- [ ] **OUT-02**: The Capitol sequence displays a concise success message and transitions into the
+- [x] **OUT-02**: The Capitol sequence displays a concise success message and transitions into the
   next round without requiring an extra confirmation click.
-- [ ] **OUT-03**: Mitch's win makes money bags appear, brings in a cartoon helicopter bearing a
+- [x] **OUT-03**: Mitch's win makes money bags appear, brings in a cartoon helicopter bearing a
   visible Chinese flag with an Elaine Chao caricature in the cockpit, lowers a rope, lifts Mitch
   and the bags, and carries them offscreen.
-- [ ] **OUT-04**: The loss sequence is nonviolent, clearly absurd, and finishes before the game-over
+- [x] **OUT-04**: The loss sequence is nonviolent, clearly absurd, and finishes before the game-over
   card accepts restart input.
 
 ### Interface And Accessibility
@@ -66,7 +66,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 - [x] **UI-02**: Gameplay HUD continuously shows current round, clicks remaining, completed rounds,
   and best run without covering the search area.
 - [x] **UI-03**: The same primary-pointer interaction works with mouse, trackpad, pen, and touch.
-- [ ] **UI-04**: Player can pause/resume, mute/unmute, and restart through labeled controls and
+- [x] **UI-04**: Player can pause/resume, mute/unmute, and restart through labeled controls and
   keyboard shortcuts without accidental stage clicks.
 - [ ] **UI-05**: Title, HUD, stage, cards, and controls remain usable on current desktop viewports
   and mobile landscape viewports down to 667 by 375 CSS pixels.
@@ -75,7 +75,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Audio
 
-- [ ] **AUDIO-01**: Start interaction unlocks a Web Audio context and all music/effects are
+- [x] **AUDIO-01**: Start interaction unlocks a Web Audio context and all music/effects are
   synthesized or original local assets with no autoplay error or remote request.
 - [ ] **AUDIO-02**: Mute state persists when storage is available; hidden or manually paused play
   suspends audio and resumes only when appropriate.
@@ -104,11 +104,11 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 - [x] **CONT-01**: Published title screen and credits visibly state that the game is fictional,
   exaggerated political satire and is unaffiliated with depicted people or institutions.
-- [ ] **CONT-02**: Helicopter, flag, spouse, and money imagery is staged as impossible cartoon
+- [x] **CONT-02**: Helicopter, flag, spouse, and money imagery is staged as impossible cartoon
   fiction and never described as evidence or a real event.
-- [ ] **CONT-03**: Published title, copy, character design, and composition do not use the Where's
+- [x] **CONT-03**: Published title, copy, character design, and composition do not use the Where's
   Waldo name, logo, striped target costume, artwork, or layouts.
-- [ ] **CONT-04**: Game copy contains no unsupported factual allegations about Mitch McConnell,
+- [x] **CONT-04**: Game copy contains no unsupported factual allegations about Mitch McConnell,
   Elaine Chao, China, financial conduct, health, absence, or official activity.
 
 ### Quality
@@ -121,7 +121,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
   sustains a 30 FPS floor at the maximum 96-actor crowd under documented test hardware profiles.
 - [ ] **QUAL-04**: Release smoke matrix passes current stable Chrome, Edge, Firefox, and Safari with
   no uncaught errors and no required network request after initial hosted load.
-- [ ] **QUAL-05**: Every shipped visual/audio asset appears in a license manifest identifying it as
+- [x] **QUAL-05**: Every shipped visual/audio asset appears in a license manifest identifying it as
   project-original or recording its compatible source license and attribution.
 
 ## v2 Requirements
@@ -177,17 +177,17 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | WORLD-04 | Phase 2 | Validated |
 | WORLD-05 | Phase 4 | Pending |
 | WORLD-06 | Phase 4 | Pending |
-| OUT-01 | Phase 3 | Pending |
-| OUT-02 | Phase 3 | Pending |
-| OUT-03 | Phase 3 | Pending |
-| OUT-04 | Phase 3 | Pending |
+| OUT-01 | Phase 3 | Validated |
+| OUT-02 | Phase 3 | Validated |
+| OUT-03 | Phase 3 | Validated |
+| OUT-04 | Phase 3 | Validated |
 | UI-01 | Phase 1 | Validated |
 | UI-02 | Phase 1 | Validated |
 | UI-03 | Phase 1 | Validated |
-| UI-04 | Phase 3 | Pending |
+| UI-04 | Phase 3 | Validated |
 | UI-05 | Phase 5 | Pending |
 | UI-06 | Phase 5 | Pending |
-| AUDIO-01 | Phase 3 | Pending |
+| AUDIO-01 | Phase 3 | Validated |
 | AUDIO-02 | Phase 3 | Pending |
 | SAVE-01 | Phase 5 | Pending |
 | SAVE-02 | Phase 5 | Pending |
@@ -197,14 +197,14 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | DIST-04 | Phase 5 | Pending |
 | DIST-05 | Phase 1 | Validated |
 | CONT-01 | Phase 1 | Validated |
-| CONT-02 | Phase 3 | Pending |
-| CONT-03 | Phase 3 | Pending |
-| CONT-04 | Phase 3 | Pending |
+| CONT-02 | Phase 3 | Validated |
+| CONT-03 | Phase 3 | Validated |
+| CONT-04 | Phase 3 | Validated |
 | QUAL-01 | Phase 1 | Validated |
 | QUAL-02 | Phase 5 | Pending |
 | QUAL-03 | Phase 2 | Validated |
 | QUAL-04 | Phase 5 | Pending |
-| QUAL-05 | Phase 3 | Pending |
+| QUAL-05 | Phase 3 | Validated |
 
 **Coverage:**
 
@@ -214,4 +214,5 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ---
 *Requirements defined: 2026-07-31*  
-*Last updated: 2026-07-31 after Phase 2 living-world verification*
+*Last updated: 2026-07-31 after Phase 3 technical verification; AUDIO-02 remains pending Phase 5
+persistence work.*
