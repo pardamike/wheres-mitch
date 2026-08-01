@@ -16,10 +16,12 @@
     "format:check": "prettier --check . --ignore-unknown",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:e2e": "playwright test --project=chromium",
-    "test:file": "PLAYWRIGHT_FILE_TEST=1 playwright test tests/e2e/file-smoke.spec.ts --project=file",
+    "test:e2e": "playwright test --project=chromium --project=chromium-mobile",
+    "test:browser-smoke": "playwright test tests/e2e/browser-smoke.spec.ts --project=chrome --project=firefox",
+    "test:file": "PLAYWRIGHT_FILE_TEST=1 playwright test tests/e2e/file-smoke.spec.ts --project=file --project=file-firefox",
+    "verify:dist": "node scripts/verify-dist.mjs",
     "package": "node scripts/package-release.mjs",
-    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:e2e && npm run test:file"
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run verify:dist && npm run test:e2e && npm run test:browser-smoke && npm run test:file"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

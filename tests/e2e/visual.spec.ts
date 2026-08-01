@@ -24,8 +24,10 @@ test('fixed scene fixtures have stable authored art inside the common stage at d
         return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
       });
       expect(stageBox).not.toBeNull();
-      expect(stageBox?.width).toBeGreaterThan(viewport.width * 0.75);
+      expect(stageBox?.width).toBeGreaterThan(viewport.width >= 1024 ? viewport.width * 0.75 : 350);
       expect(stageBox?.height).toBeGreaterThan(viewport.height * 0.45);
+      expect((stageBox?.width ?? 0) / (stageBox?.height ?? 1)).toBeGreaterThan(1.58);
+      expect((stageBox?.width ?? 0) / (stageBox?.height ?? 1)).toBeLessThan(1.62);
       expect(artBounds.x).toBeLessThanOrEqual(0);
       expect(artBounds.y).toBeLessThanOrEqual(0);
       expect(artBounds.width).toBeGreaterThanOrEqual(1440);

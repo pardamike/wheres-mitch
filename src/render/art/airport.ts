@@ -405,13 +405,19 @@ export const buildAirportStage: SceneStageBuilder = ({ layers, variation }) => {
   drawOccluders(layers.occluders);
   return {
     updateAmbient(clockMs: number, reducedMotion: boolean): void {
-      const motion = reducedMotion ? 0.25 : 1;
-      const seconds = (clockMs / 1000) * motion;
-      setTransform(ambient.tread, `translate(${((clockMs * 0.035 * motion) % 66) - 66} 0)`);
-      setTransform(ambient.cart, `translate(${1170 - ((clockMs * 0.026 * motion) % 430)} 595)`);
+      if (reducedMotion) {
+        setTransform(ambient.tread, 'translate(-66 0)');
+        setTransform(ambient.cart, 'translate(1170 595)');
+        setTransform(ambient.plane, 'translate(-420 268)');
+        ambient.board.setAttribute('opacity', '1');
+        return;
+      }
+      const seconds = clockMs / 1000;
+      setTransform(ambient.tread, `translate(${((clockMs * 0.035) % 66) - 66} 0)`);
+      setTransform(ambient.cart, `translate(${1170 - ((clockMs * 0.026) % 430)} 595)`);
       setTransform(
         ambient.plane,
-        `translate(${((clockMs * 0.034 * motion) % 1880) - 420} ${268 + Math.sin(seconds * 1.6) * 3})`,
+        `translate(${((clockMs * 0.034) % 1880) - 420} ${268 + Math.sin(seconds * 1.6) * 3})`,
       );
       ambient.board.setAttribute('opacity', String(0.9 + Math.sin(seconds * 3.1) * 0.1));
     },

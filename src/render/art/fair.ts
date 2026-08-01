@@ -487,13 +487,18 @@ export const buildFairStage: SceneStageBuilder = ({ layers, variation }) => {
   drawOccluders(layers.occluders);
   return {
     updateAmbient(clockMs: number, reducedMotion: boolean): void {
-      const motion = reducedMotion ? 0.28 : 1;
-      const seconds = (clockMs / 1000) * motion;
+      if (reducedMotion) {
+        setTransform(ambient.wheel, 'rotate(0)');
+        setTransform(ambient.pennants, 'translate(0 0)');
+        setTransform(ambient.steam, 'translate(0 0)');
+        return;
+      }
+      const seconds = clockMs / 1000;
       setTransform(ambient.wheel, `rotate(${seconds * 7})`);
       setTransform(ambient.pennants, `translate(0 ${Math.sin(seconds * 2.2) * 5})`);
       setTransform(
         ambient.steam,
-        `translate(${Math.sin(seconds * 2.8) * 7} ${-((clockMs * 0.012 * motion) % 24)})`,
+        `translate(${Math.sin(seconds * 2.8) * 7} ${-((clockMs * 0.012) % 24)})`,
       );
     },
   };

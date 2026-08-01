@@ -67,6 +67,7 @@
           <button type="button" class="text-button" data-action="title-motion">
             MOTION: SYSTEM
           </button>
+          <button type="button" class="text-button" data-action="help">HELP &amp; RECORDS</button>
         </div>
         <p class="privacy-note">No accounts. No tracking. No network required.</p>
         <p class="disclaimer">
@@ -143,6 +144,13 @@
               <button type="button" class="text-button" data-action="back-title">
                 BACK TO TITLE
               </button>
+              <button type="button" class="text-button" data-action="title-sound">SOUND: ON</button>
+              <button type="button" class="text-button" data-action="title-motion">
+                MOTION: SYSTEM
+              </button>
+              <button type="button" class="text-button" data-action="help">
+                HELP &amp; RECORDS
+              </button>
             </div>
           </div>
           <div id="visibility-card" class="stage-card visibility-card" hidden>
@@ -170,7 +178,7 @@
               </button>
             </div>
           </div>
-          <div id="rotate-card" class="stage-card rotate-card" hidden>
+          <div id="rotate-card" class="stage-card rotate-card" role="status" hidden>
             <p>FOR THE FULL SEARCH</p>
             <strong>Rotate your device.</strong>
             <button type="button" class="text-button" data-action="continue-portrait">
@@ -245,6 +253,28 @@
             <strong>Shortcuts:</strong> Space pauses, M toggles sound, R opens restart, and Escape
             closes this card or pauses play.
           </p>
+          <section class="records-panel" aria-labelledby="records-title">
+            <p class="eyebrow">YOUR DEVICE</p>
+            <h3 id="records-title">LOCAL RECORDS</h3>
+            <dl class="records-stats">
+              <div>
+                <dt>Best run</dt>
+                <dd id="records-best">—</dd>
+              </div>
+              <div>
+                <dt>Fastest find</dt>
+                <dd id="records-fastest">—</dd>
+              </div>
+              <div>
+                <dt>Lifetime catches</dt>
+                <dd id="records-catches">0</dd>
+              </div>
+            </dl>
+            <p id="records-storage-status" class="storage-status">Stored on this device only.</p>
+            <button type="button" class="text-button" data-action="reset-records">
+              RESET LOCAL RECORDS
+            </button>
+          </section>
           <p class="disclaimer">
             Where's Mitch? is an absurd work of fictional political satire. All characters and
             events are exaggerated and invented. This game is not affiliated with or endorsed by
@@ -255,9 +285,39 @@
             Original project artwork and synthesized sound. No accounts, tracking, or network
             required.
           </p>
-          <button type="button" class="primary-button" data-action="close-help">
+          <button id="close-help" type="button" class="primary-button" data-action="close-help">
             BACK TO THE GAME
           </button>
+        </div>
+      </section>
+
+      <section
+        id="reset-records-card"
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reset-records-title"
+        hidden
+      >
+        <div class="modal-card-inner confirmation-modal">
+          <p class="eyebrow">LOCAL RECORDS</p>
+          <h2 id="reset-records-title">RESET YOUR RECORDS?</h2>
+          <p>
+            This clears best run, fastest find, lifetime catches, and the saved sound and motion
+            settings on this device.
+          </p>
+          <div class="pause-links">
+            <button type="button" class="text-button" data-action="cancel-reset-records">
+              KEEP THEM
+            </button>
+            <button
+              type="button"
+              class="primary-button danger-button"
+              data-action="confirm-reset-records"
+            >
+              RESET RECORDS
+            </button>
+          </div>
         </div>
       </section>
     </main>

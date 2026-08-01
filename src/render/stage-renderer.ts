@@ -319,16 +319,18 @@ export class StageRenderer {
     }
     const sceneClockMs = this.frozenSceneClockMs ?? clockMs;
     const seconds = sceneClockMs / 1000;
-    const crowdMotion = reducedMotion ? 0.7 : 1;
+    const crowdMotion = reducedMotion ? 0 : 1;
     for (const actor of this.actorNodes) {
       const moving = actor.actor.pose === 'walk';
-      const bob = moving ? Math.sin(seconds * 7 * crowdMotion + actor.actor.phase) * 2 : 0;
-      const gesture = actor.actor.pose === 'react' ? Math.sin(seconds * 14) * 4 : 0;
+      const bob =
+        !reducedMotion && moving ? Math.sin(seconds * 7 * crowdMotion + actor.actor.phase) * 2 : 0;
+      const gesture =
+        !reducedMotion && actor.actor.pose === 'react' ? Math.sin(seconds * 14) * 4 : 0;
       const poseOffset = actor.actor.pose === 'sit' ? 12 : actor.actor.pose === 'queue' ? 3 : 0;
       const poseTilt =
-        actor.actor.pose === 'chat'
+        !reducedMotion && actor.actor.pose === 'chat'
           ? Math.sin(seconds * 4 + actor.actor.phase) * 5
-          : actor.actor.pose === 'interact'
+          : !reducedMotion && actor.actor.pose === 'interact'
             ? Math.sin(seconds * 3 + actor.actor.phase) * 3
             : 0;
       setTransform(
@@ -348,8 +350,11 @@ export class StageRenderer {
     this.scenePresentation?.updateAmbient(sceneClockMs, reducedMotion);
 
     const mitch = this.activeScene.mitch;
-    const mitchBob =
-      mitch.mode === 'transit' ? Math.sin(seconds * 10) * 2.5 : Math.sin(seconds * 3) * 1.5;
+    const mitchBob = reducedMotion
+      ? 0
+      : mitch.mode === 'transit'
+        ? Math.sin(seconds * 10) * 2.5
+        : Math.sin(seconds * 3) * 1.5;
     setTransform(
       this.mitchRoot,
       `translate(${mitch.position.x} ${mitch.position.y + mitchBob}) scale(${MITCH_SCALE})`,
@@ -365,7 +370,7 @@ export class StageRenderer {
     }
     this.effectsLayer.setAttribute('opacity', outcomeActive ? '0' : '1');
     this.updateMissEffects(sceneClockMs);
-    this.updateCutscene(outcomeActive ? outcome : null, state);
+    this.updateCutscene(outcomeActive ? outcome : null, state, reducedMotion);
   }
 
   private showMiss(marker: MissMarker, clockMs: number): void {
@@ -397,7 +402,11 @@ export class StageRenderer {
     }
   }
 
-  private updateCutscene(outcome: OutcomeRenderState | null, state: GameState): void {
+  private updateCutscene(
+    outcome: OutcomeRenderState | null,
+    state: GameState,
+    reducedMotion: boolean,
+  ): void {
     const cutscene = this.cutscene;
     if (!cutscene) {
       return;
@@ -409,13 +418,17 @@ export class StageRenderer {
     cutscene.root.setAttribute('data-cutscene-kind', outcome.kind);
     cutscene.root.setAttribute('data-cutscene-beat', outcome.snapshot.beatId ?? 'complete');
     if (outcome.kind === 'capture') {
-      this.renderCapture(outcome.snapshot, state);
+      this.renderCapture(outcome.snapshot, state, reducedMotion);
     } else {
-      this.renderEscape(outcome.snapshot);
+      this.renderEscape(outcome.snapshot, reducedMotion);
     }
   }
 
-  private renderCapture(snapshot: SequenceSnapshot, state: GameState): void {
+  private renderCapture(
+    snapshot: SequenceSnapshot,
+    state: GameState,
+    reducedMotion: boolean,
+  ): void {
     const cutscene = this.cutscene;
     const scene = this.activeScene;
     if (!cutscene || !scene) {
@@ -443,7 +456,7 @@ export class StageRenderer {
     cutscene.captureMitch.root.setAttribute('opacity', '1');
     setTransform(
       cutscene.captureMitch.root,
-      `translate(${visual.mitchPosition.x} ${visual.mitchPosition.y}) rotate(${visual.mitchRotation}) scale(${visual.mitchScale})`,
+      `translate(${visual.mitchPosition.x} ${visual.mitchPosition.y}) rotate(${reducedMotion ? visual.mitchRotation * 0.04 : visual.mitchRotation}) scale(${visual.mitchScale})`,
     );
     this.applyMitchTuck(cutscene.captureMitch, visual.tuckProgress);
     const tubePath = `M${scene.mitch.position.x} ${scene.mitch.position.y - 10} Q820 140 ${destination.x} ${destination.y}`;
@@ -477,7 +490,7 @@ export class StageRenderer {
     this.hideEscapeNodes(cutscene);
   }
 
-  private renderEscape(snapshot: SequenceSnapshot): void {
+  private renderEscape(snapshot: SequenceSnapshot, reducedMotion: boolean): void {
     const cutscene = this.cutscene;
     const scene = this.activeScene;
     if (!cutscene || !scene) {
@@ -509,7 +522,7 @@ export class StageRenderer {
     cutscene.escapeLoad.setAttribute('opacity', String(visual.loadOpacity));
     setTransform(
       cutscene.escapeLoad,
-      `translate(${visual.loadPosition.x} ${visual.loadPosition.y}) rotate(${visual.loadRotation})`,
+      `translate(${visual.loadPosition.x} ${visual.loadPosition.y}) rotate(${reducedMotion ? visual.loadRotation * 0.12 : visual.loadRotation})`,
     );
     setTransform(cutscene.escapeMitch.root, `scale(${visual.mitchScale})`);
     this.applyMitchTuck(cutscene.escapeMitch, visual.tuckProgress);
@@ -530,14 +543,20 @@ export class StageRenderer {
       cutscene.helicopter.root,
       `translate(${visual.helicopterPosition.x} ${visual.helicopterPosition.y}) scale(${visual.helicopterScale})`,
     );
-    setTransform(cutscene.helicopter.rotor, `rotate(${visual.rotorDegrees} 125 -34)`);
+    setTransform(
+      cutscene.helicopter.rotor,
+      `rotate(${reducedMotion ? 0 : visual.rotorDegrees} 125 -34)`,
+    );
     cutscene.helicopter.rope.setAttribute('opacity', String(visual.ropeOpacity));
     cutscene.helicopter.rope.setAttribute('y2', String(145 + visual.ropeLength));
     cutscene.helicopter.hook.setAttribute('opacity', String(visual.ropeOpacity));
     setTransform(cutscene.helicopter.hook, `translate(0 ${145 + visual.ropeLength})`);
     for (const [index, wind] of cutscene.windLines.entries()) {
-      wind.setAttribute('opacity', String(visual.windOpacity * (0.42 + (index % 2) * 0.18)));
-      setTransform(wind, `translate(${(visual.rotorDegrees % 42) - 21} 0)`);
+      wind.setAttribute(
+        'opacity',
+        String(visual.windOpacity * (reducedMotion ? 0.16 : 0.42 + (index % 2) * 0.18)),
+      );
+      setTransform(wind, `translate(${reducedMotion ? 0 : (visual.rotorDegrees % 42) - 21} 0)`);
     }
   }
 

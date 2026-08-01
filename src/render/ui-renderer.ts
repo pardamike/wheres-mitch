@@ -4,7 +4,9 @@ export interface UiRenderOptions {
   portraitAllowed: boolean;
   visibilityCountdownMs: number;
   restartConfirmationOpen?: boolean;
+  resetRecordsConfirmationOpen?: boolean;
   creditsOpen?: boolean;
+  recordsAvailable?: boolean;
   outcome?: {
     kind: 'capture' | 'escape';
     beatId: string | null;
@@ -26,6 +28,8 @@ interface UiNodes {
   roundCardTitle: HTMLElement;
   pauseCard: HTMLElement;
   restartCard: HTMLElement;
+  resetRecordsCard: HTMLElement;
+  rotateCard: HTMLElement;
   visibilityCard: HTMLElement;
   visibilityCardKicker: HTMLElement;
   visibilityCardTitle: HTMLElement;
@@ -39,10 +43,14 @@ interface UiNodes {
   resultAccuracy: HTMLElement;
   resultFastest: HTMLElement;
   resultBest: HTMLElement;
+  recordsBest: HTMLElement;
+  recordsFastest: HTMLElement;
+  recordsCatches: HTMLElement;
+  recordsStorageStatus: HTMLElement;
   pauseButtons: HTMLButtonElement[];
   muteButtons: HTMLButtonElement[];
-  titleSoundButton: HTMLButtonElement | null;
-  titleMotionButton: HTMLButtonElement | null;
+  settingsSoundButtons: HTMLButtonElement[];
+  settingsMotionButtons: HTMLButtonElement[];
 }
 
 function requireNode<T extends Element>(selector: string): T {
@@ -55,6 +63,10 @@ function requireNode<T extends Element>(selector: string): T {
 
 function formatDuration(milliseconds: number | null): string {
   return milliseconds === null ? '—' : `${(milliseconds / 1000).toFixed(1)}s`;
+}
+
+function formatBestRounds(rounds: number): string {
+  return rounds > 0 ? String(rounds) : '—';
 }
 
 function announce(state: GameState, sceneTitle: string): string {
@@ -97,6 +109,8 @@ export class UiRenderer {
       roundCardTitle: requireNode<HTMLElement>('#round-card-title'),
       pauseCard: requireNode<HTMLElement>('#pause-card'),
       restartCard: requireNode<HTMLElement>('#restart-card'),
+      resetRecordsCard: requireNode<HTMLElement>('#reset-records-card'),
+      rotateCard: requireNode<HTMLElement>('#rotate-card'),
       visibilityCard: requireNode<HTMLElement>('#visibility-card'),
       visibilityCardKicker: requireNode<HTMLElement>('#visibility-card-kicker'),
       visibilityCardTitle: requireNode<HTMLElement>('#visibility-card-title'),
@@ -110,12 +124,20 @@ export class UiRenderer {
       resultAccuracy: requireNode<HTMLElement>('#result-accuracy'),
       resultFastest: requireNode<HTMLElement>('#result-fastest'),
       resultBest: requireNode<HTMLElement>('#result-best'),
+      recordsBest: requireNode<HTMLElement>('#records-best'),
+      recordsFastest: requireNode<HTMLElement>('#records-fastest'),
+      recordsCatches: requireNode<HTMLElement>('#records-catches'),
+      recordsStorageStatus: requireNode<HTMLElement>('#records-storage-status'),
       pauseButtons: Array.from(
         document.querySelectorAll<HTMLButtonElement>('[data-action="pause"]'),
       ),
       muteButtons: Array.from(document.querySelectorAll<HTMLButtonElement>('[data-action="mute"]')),
-      titleSoundButton: document.querySelector<HTMLButtonElement>('[data-action="title-sound"]'),
-      titleMotionButton: document.querySelector<HTMLButtonElement>('[data-action="title-motion"]'),
+      settingsSoundButtons: Array.from(
+        document.querySelectorAll<HTMLButtonElement>('[data-action="title-sound"]'),
+      ),
+      settingsMotionButtons: Array.from(
+        document.querySelectorAll<HTMLButtonElement>('[data-action="title-motion"]'),
+      ),
     };
   }
 
@@ -143,6 +165,7 @@ export class UiRenderer {
     this.nodes.pauseCard.hidden =
       state.mode !== 'paused' || options.restartConfirmationOpen === true;
     this.nodes.restartCard.hidden = options.restartConfirmationOpen !== true;
+    this.nodes.resetRecordsCard.hidden = options.resetRecordsConfirmationOpen !== true;
     this.nodes.visibilityCard.hidden = options.visibilityCountdownMs <= 0;
     this.nodes.visibilityCardKicker.textContent =
       options.visibilityCountdownMs > 1000
@@ -153,7 +176,10 @@ export class UiRenderer {
     this.nodes.visibilityCardTitle.textContent =
       options.visibilityCountdownMs > 500 ? 'Mitch is moving again…' : 'GO!';
     this.nodes.gameOverCard.hidden = state.mode !== 'game_over';
-    this.nodes.creditsCard.hidden = options.creditsOpen !== true;
+    this.nodes.creditsCard.hidden =
+      options.creditsOpen !== true || options.resetRecordsConfirmationOpen === true;
+    const compactPortrait = window.innerWidth < 768 && window.innerHeight > window.innerWidth;
+    this.nodes.rotateCard.hidden = isTitle || options.portraitAllowed || !compactPortrait;
     this.nodes.outcomeSkip.hidden = options.outcome?.canSkip !== true;
     this.nodes.root.dataset.outcome = options.outcome?.kind ?? '';
     this.nodes.root.dataset.outcomeBeat = options.outcome?.beatId ?? '';
@@ -167,7 +193,14 @@ export class UiRenderer {
     this.nodes.resultFastest.textContent = formatDuration(
       state.fastestRunFindMs ?? state.records.fastestFindMs,
     );
-    this.nodes.resultBest.textContent = String(state.records.bestRounds);
+    this.nodes.resultBest.textContent = formatBestRounds(state.records.bestRounds);
+    this.nodes.recordsBest.textContent = formatBestRounds(state.records.bestRounds);
+    this.nodes.recordsFastest.textContent = formatDuration(state.records.fastestFindMs);
+    this.nodes.recordsCatches.textContent = String(state.records.lifetimeCatches);
+    this.nodes.recordsStorageStatus.textContent =
+      options.recordsAvailable === false
+        ? 'This session only — local storage is unavailable.'
+        : 'Stored on this device only.';
 
     const pauseLabel = state.mode === 'paused' ? 'Resume game' : 'Pause game';
     for (const button of this.nodes.pauseButtons) {
@@ -178,11 +211,11 @@ export class UiRenderer {
       button.setAttribute('aria-label', state.soundEnabled ? 'Mute sound' : 'Unmute sound');
       button.textContent = state.soundEnabled ? '♪' : '×';
     }
-    if (this.nodes.titleSoundButton) {
-      this.nodes.titleSoundButton.textContent = `SOUND: ${state.soundEnabled ? 'ON' : 'OFF'}`;
+    for (const button of this.nodes.settingsSoundButtons) {
+      button.textContent = `SOUND: ${state.soundEnabled ? 'ON' : 'OFF'}`;
     }
-    if (this.nodes.titleMotionButton) {
-      this.nodes.titleMotionButton.textContent = `MOTION: ${state.motionMode.toUpperCase()}`;
+    for (const button of this.nodes.settingsMotionButtons) {
+      button.textContent = `MOTION: ${state.motionMode.toUpperCase()}`;
     }
 
     const announcement = announce(state, sceneTitle);

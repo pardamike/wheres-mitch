@@ -3,7 +3,7 @@ import { difficultyForRound } from '../core/difficulty';
 import type { GameEvent } from '../core/events';
 import { createInitialState, isStageInteractive, reduceGame } from '../core/reducer';
 import { createRunSeed, deriveSeed, parseRoundFromSearch, parseSeedFromSearch } from '../core/rng';
-import type { MotionMode, SceneId } from '../core/types';
+import type { GameState, MotionMode, Records, SceneId } from '../core/types';
 import { AudioEngine } from '../audio/audio-engine';
 import { createScene } from '../scenes/registry';
 import { captureBeats } from '../render/cutscenes/capture';
@@ -14,6 +14,7 @@ import { UiRenderer } from '../render/ui-renderer';
 import { mitchSnapshot } from '../world/mitch';
 import { reactToSceneMiss, updateScene, type SceneInstance } from '../world/scene';
 import { parseSceneOverride, SceneSelector } from '../world/scene-selector';
+import { createRecordsStore, type RecordsStore } from '../storage/storage';
 import { attachStageInput } from './input';
 import {
   recordCompletedRounds,
@@ -67,25 +68,30 @@ declare global {
 }
 
 export class GameController {
-  private state = createInitialState();
+  private state: GameState;
   private scene: SceneInstance | null = null;
   private readonly nodes: GameControllerNodes;
   private readonly stageRenderer: StageRenderer;
   private readonly uiRenderer: UiRenderer;
   private readonly clock = new SimulationClock();
   private readonly audio = new AudioEngine();
+  private readonly recordsStore: RecordsStore;
   private frameHandle = 0;
   private modeElapsedMs = 0;
   private visibilityCountdownMs = 0;
   private portraitAllowed = false;
   private restartConfirmationOpen = false;
+  private resetRecordsConfirmationOpen = false;
   private creditsOpen = false;
+  private dialogReturnFocus: HTMLElement | null = null;
   private outcome: ActiveOutcome | null = null;
   private readonly debugEnabled: boolean;
   private readonly sceneOverride: SceneId | null;
   private sceneSelector = new SceneSelector(0);
   private sceneTitle = 'WASHINGTON STREET';
   private detachVisibility: (() => void) | null = null;
+  private readonly motionMediaQuery: MediaQueryList;
+  private readonly handleMotionPreferenceChange: () => void;
 
   constructor() {
     this.nodes = {
@@ -94,10 +100,19 @@ export class GameController {
       startButton: requireControllerNode<HTMLButtonElement>('#start-button'),
       playScreen: requireControllerNode<HTMLElement>('#play-screen'),
     };
+    this.recordsStore = createRecordsStore();
+    this.state = createInitialState(this.recordsStore.load());
     this.stageRenderer = new StageRenderer(this.nodes.stage);
     this.uiRenderer = new UiRenderer();
     this.debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
     this.sceneOverride = parseSceneOverride(window.location.search);
+    this.motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.handleMotionPreferenceChange = () => {
+      if (this.state.motionMode === 'system') {
+        this.render();
+      }
+    };
+    this.motionMediaQuery.addEventListener('change', this.handleMotionPreferenceChange);
     this.audio.setMuted(!this.state.soundEnabled);
     if (document.hidden) {
       this.clock.pause('hidden');
@@ -114,12 +129,15 @@ export class GameController {
       control.addEventListener('pointerdown', (event) => event.stopPropagation());
       control.addEventListener('click', (event) => {
         event.stopPropagation();
-        this.handleAction(control.dataset.action ?? '');
+        this.handleAction(control.dataset.action ?? '', control);
       });
     }
     attachStageInput(this.nodes.stage, {
       isEnabled: () =>
-        isStageInteractive(this.state) && !this.restartConfirmationOpen && !this.creditsOpen,
+        isStageInteractive(this.state) &&
+        !this.restartConfirmationOpen &&
+        !this.resetRecordsConfirmationOpen &&
+        !this.creditsOpen,
       onMiss: (point) => this.dispatch({ type: 'MISS', ...point }),
       onMitchCaught: () => this.dispatch({ type: 'MITCH_CAUGHT' }),
     });
@@ -136,18 +154,20 @@ export class GameController {
   destroy(): void {
     cancelAnimationFrame(this.frameHandle);
     this.detachVisibility?.();
+    this.motionMediaQuery.removeEventListener('change', this.handleMotionPreferenceChange);
     void this.audio.dispose();
   }
 
   private startRun(): void {
     this.restartConfirmationOpen = false;
+    this.resetRecordsConfirmationOpen = false;
     this.creditsOpen = false;
     const requestedSeed = parseSeedFromSearch(window.location.search);
     const startingRound = parseRoundFromSearch(window.location.search) ?? undefined;
     this.dispatch({ type: 'START_RUN', runSeed: requestedSeed ?? createRunSeed(), startingRound });
   }
 
-  private handleAction(action: string): void {
+  private handleAction(action: string, invoker?: HTMLElement): void {
     switch (action) {
       case 'pause':
         this.dispatch({ type: this.state.mode === 'paused' ? 'RESUME' : 'PAUSE' });
@@ -169,7 +189,9 @@ export class GameController {
           this.state.mode === 'paused'
         ) {
           this.restartConfirmationOpen = true;
+          this.rememberDialogFocus(invoker);
           this.render();
+          this.focusDialog('[data-action="confirm-restart"]');
         }
         break;
       case 'confirm-restart':
@@ -179,6 +201,7 @@ export class GameController {
       case 'cancel-restart':
         this.restartConfirmationOpen = false;
         this.render();
+        this.restoreDialogFocus();
         break;
       case 'search-again':
         this.dispatch({ type: 'RESTART', runSeed: createRunSeed() });
@@ -189,11 +212,31 @@ export class GameController {
         break;
       case 'help':
         this.creditsOpen = true;
+        this.rememberDialogFocus(invoker);
         this.render();
+        this.focusDialog('[data-action="close-help"]');
         break;
       case 'close-help':
         this.creditsOpen = false;
         this.render();
+        this.restoreDialogFocus();
+        break;
+      case 'reset-records':
+        this.resetRecordsConfirmationOpen = true;
+        this.rememberDialogFocus(invoker);
+        this.render();
+        this.focusDialog('[data-action="confirm-reset-records"]');
+        break;
+      case 'confirm-reset-records':
+        this.resetRecordsConfirmationOpen = false;
+        this.replaceRecords(this.recordsStore.reset(), false);
+        this.render();
+        this.restoreDialogFocus();
+        break;
+      case 'cancel-reset-records':
+        this.resetRecordsConfirmationOpen = false;
+        this.render();
+        this.restoreDialogFocus();
         break;
       case 'skip-outcome':
         this.skipOutcome();
@@ -211,6 +254,13 @@ export class GameController {
   }
 
   private handleKeyboard(event: KeyboardEvent): void {
+    if (this.resetRecordsConfirmationOpen) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.handleAction('cancel-reset-records');
+      }
+      return;
+    }
     if (this.restartConfirmationOpen) {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -260,6 +310,7 @@ export class GameController {
     }
     if (event.type === 'START_RUN' || event.type === 'RESTART') {
       this.restartConfirmationOpen = false;
+      this.resetRecordsConfirmationOpen = false;
       this.creditsOpen = false;
       this.clock.reset();
       this.sceneSelector = new SceneSelector(next.runSeed);
@@ -277,29 +328,17 @@ export class GameController {
     }
     if (event.type === 'MITCH_CAUGHT' && next.lastCaptureMs !== null) {
       this.audio.cue('catch');
-      this.state = reduceGame(this.state, {
-        type: 'SET_RECORDS',
-        records: recordSuccessfulCatch(this.state.records, next.lastCaptureMs),
-      });
+      this.replaceRecords(recordSuccessfulCatch(this.state.records, next.lastCaptureMs));
     }
     if (event.type === 'CAPTURE_COMPLETE' || event.type === 'ESCAPE_COMPLETE') {
-      this.state = reduceGame(this.state, {
-        type: 'SET_RECORDS',
-        records: recordCompletedRounds(this.state.records, this.state.completedRounds),
-      });
+      this.replaceRecords(recordCompletedRounds(this.state.records, this.state.completedRounds));
     }
     if (event.type === 'SET_SOUND') {
       this.audio.setMuted(!event.enabled);
-      this.state = reduceGame(this.state, {
-        type: 'SET_RECORDS',
-        records: withSoundEnabled(this.state.records, event.enabled),
-      });
+      this.replaceRecords(withSoundEnabled(this.state.records, event.enabled));
     }
     if (event.type === 'SET_MOTION') {
-      this.state = reduceGame(this.state, {
-        type: 'SET_RECORDS',
-        records: withMotionMode(this.state.records, event.mode),
-      });
+      this.replaceRecords(withMotionMode(this.state.records, event.mode));
     }
 
     this.syncOutcome();
@@ -313,6 +352,7 @@ export class GameController {
     if (event.type === 'BACK_TO_TITLE') {
       this.scene = null;
       this.creditsOpen = false;
+      this.resetRecordsConfirmationOpen = false;
     }
     this.render();
   }
@@ -432,7 +472,9 @@ export class GameController {
       portraitAllowed: this.portraitAllowed,
       visibilityCountdownMs: this.visibilityCountdownMs,
       restartConfirmationOpen: this.restartConfirmationOpen,
+      resetRecordsConfirmationOpen: this.resetRecordsConfirmationOpen,
       creditsOpen: this.creditsOpen,
+      recordsAvailable: this.recordsStore.available,
       outcome: this.outcome
         ? {
             kind: this.outcome.kind,
@@ -482,14 +524,14 @@ export class GameController {
           })
         : null,
       audio: this.audio.debugState,
+      storageAvailable: this.recordsStore.available,
     });
   }
 
   private prefersReducedMotion(): boolean {
     return (
       this.state.motionMode === 'reduce' ||
-      (this.state.motionMode === 'system' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      (this.state.motionMode === 'system' && this.motionMediaQuery.matches)
     );
   }
 
@@ -546,5 +588,27 @@ export class GameController {
       default:
         break;
     }
+  }
+
+  private replaceRecords(records: Records, persist = true): void {
+    this.state = reduceGame(this.state, { type: 'SET_RECORDS', records });
+    if (persist) {
+      this.recordsStore.save(this.state.records);
+    }
+  }
+
+  private rememberDialogFocus(invoker?: HTMLElement): void {
+    const active = invoker ?? document.activeElement;
+    this.dialogReturnFocus = active instanceof HTMLElement ? active : null;
+  }
+
+  private restoreDialogFocus(): void {
+    const target = this.dialogReturnFocus;
+    this.dialogReturnFocus = null;
+    target?.focus();
+  }
+
+  private focusDialog(selector: string): void {
+    queueMicrotask(() => document.querySelector<HTMLElement>(selector)?.focus());
   }
 }

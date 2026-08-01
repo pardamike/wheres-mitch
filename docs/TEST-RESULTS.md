@@ -1,0 +1,74 @@
+# Local Release Verification Results
+
+**Run date:** 2026-07-31
+
+**Host:** Apple M3 Pro (arm64), macOS 14.3 (23D56)
+
+**Toolchain:** Node 24.18.1, npm 11.16.0, Playwright 1.62.1
+
+## Automated release gate
+
+`npm run verify` passed from the working tree after the final Phase 5 changes.
+
+| Check | Result |
+|---|---|
+| TypeScript, ESLint, Prettier | Passed |
+| Vitest | 18 files, 64 tests passed |
+| Production build and artifact verifier | Passed; six documented root files only |
+| Chromium suite | 36 hosted/touch/visual/performance tests passed |
+| Chrome + Firefox hosted smoke | Both completed catch, escape, restart, and no-post-load-network checks |
+| Chrome + Firefox `file://` smoke | Both completed settings, catch, escape, and restart with zero remote requests/errors |
+
+The build verifier confirms a classic IIFE with only relative asset references and rejects remote
+URLs, fetch/XHR/WebSocket primitives, workers, source maps, modules, and unexpected artifact files.
+
+## Responsive and accessibility evidence
+
+- Automated layout assertions passed at 1440×1000, 1024×768, 844×390, and 667×375.
+- The stage remains uncropped/letterboxed at compact landscape sizes; all HUD icon targets are at
+  least 44 CSS pixels.
+- Portrait shows an actionable rotate advisory without horizontal HUD overflow; Continue Anyway
+  preserves the logical SVG stage.
+- Keyboard dialog focus/open/close behavior, Escape precedence, reset confirmation, 200% zoom
+  reachability, and touch catch/miss input are covered.
+- System, reduced, and full motion modes are covered. Reduced mode freezes decorative ambient
+  loops while the target route continues, and saved overrides reload correctly.
+
+## Storage and privacy evidence
+
+- Unit and browser checks cover missing, corrupt, incompatible, extreme, blocked-read,
+  blocked-write/quota, and blocked-remove storage behavior.
+- Browser checks confirm that only `wheres-mitch:records:v1` is written and that reset removes it.
+- A browser run with `localStorage` forced to throw still completes a catch and escape loop in
+  session memory.
+- Hosted and direct-file network tests observed no runtime remote request after static load; the
+  game contains no analytics, tracking, API, or backend dependency.
+
+## Browser matrix
+
+| Browser/engine | Hosted smoke | Direct file | Notes |
+|---|---:|---:|---|
+| Google Chrome 150.0.7871.188 | Passed | Passed | Actual installed Chrome via Playwright channel |
+| Playwright Chromium 151.0.7922.34 | Passed | Passed | Full E2E, responsive, touch emulation, and performance coverage |
+| Playwright Firefox 153.0 | Passed | Passed | Deterministic catch/escape/restart smoke |
+| Safari 17.3 / Playwright WebKit | Pending | Pending | Available WebKit build is frozen on macOS 14 ARM and exits with bus error before launch; requires real Safari review |
+| Microsoft Edge | Pending | Pending | Not installed on this machine |
+| Real mobile Safari/Android Chrome | Pending | N/A | iPhone-landscape Chromium touch emulation passed; real-device review remains human work |
+
+## Visual and performance review
+
+The implementation agent inspected deterministic current-build screenshots for a desktop fair,
+compact airport landscape, and the portrait rotate panel. The art, stage framing, and advisory were
+technically reviewed; owner visual/tone approval remains pending.
+
+The existing 96-actor Chromium profile is recorded in [PERFORMANCE.md](PERFORMANCE.md): 8.3 ms
+median, 9.3 ms p95 desktop cadence, and zero long frames on this machine. The compact emulation
+also clears the advisory 30 FPS floor.
+
+## Intentional boundaries
+
+- No Cloudflare, S3, CloudFront, or other deployment was attempted.
+- Local package output is generated only after a clean committed worktree with `npm run package` and
+  is ignored by Git.
+- A public launch still needs owner visual/tone approval plus desired Safari, Edge, and real-mobile
+  smoke tests.

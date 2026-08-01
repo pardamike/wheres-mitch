@@ -41,8 +41,10 @@ test.describe('airport concourse', () => {
     await page.setViewportSize({ width: 667, height: 375 });
     await startScene(page, 'airport', 324003);
     const box = await page.locator('#game-stage').boundingBox();
-    expect(box?.width).toBeGreaterThan(500);
-    expect(box?.height).toBeGreaterThan(250);
+    expect(box?.width).toBeGreaterThan(350);
+    expect(box?.height).toBeGreaterThan(220);
+    expect((box?.width ?? 0) / (box?.height ?? 1)).toBeGreaterThan(1.58);
+    expect((box?.width ?? 0) / (box?.height ?? 1)).toBeLessThan(1.62);
     await expect(page.locator('#airport-departure-board')).toBeVisible();
   });
 });

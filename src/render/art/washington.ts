@@ -340,7 +340,12 @@ export const buildWashingtonStage: SceneStageBuilder = ({ layers, variation }) =
     }),
   );
   return {
-    updateAmbient(clockMs: number): void {
+    updateAmbient(clockMs: number, reducedMotion: boolean): void {
+      if (reducedMotion) {
+        setTransform(vehicles.bus, 'translate(-330 460)');
+        setTransform(vehicles.taxi, 'translate(1210 687)');
+        return;
+      }
       setTransform(vehicles.bus, `translate(${((clockMs * 0.025) % 1830) - 330} 460)`);
       setTransform(vehicles.taxi, `translate(${1210 - ((clockMs * 0.017) % 780)} 687)`);
     },

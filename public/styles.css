@@ -30,7 +30,10 @@ body {
   min-width: 320px;
   min-height: 100dvh;
   margin: 0;
-  padding: clamp(0.75rem, 2.4vw, 1.5rem);
+  padding-top: max(env(safe-area-inset-top), clamp(0.75rem, 2.4vw, 1.5rem));
+  padding-right: max(env(safe-area-inset-right), clamp(0.75rem, 2.4vw, 1.5rem));
+  padding-bottom: max(env(safe-area-inset-bottom), clamp(0.75rem, 2.4vw, 1.5rem));
+  padding-left: max(env(safe-area-inset-left), clamp(0.75rem, 2.4vw, 1.5rem));
   background: radial-gradient(circle at top, #fffdf7 0, var(--paper) 52%, var(--paper-deep) 100%);
 }
 
@@ -41,6 +44,7 @@ a {
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 button:focus-visible,
@@ -181,7 +185,7 @@ h2 {
 }
 
 .text-button {
-  min-height: 2.4rem;
+  min-height: 2.75rem;
   padding: 0.35rem 0.55rem;
   background: transparent;
   color: var(--blue-dark);
@@ -272,8 +276,8 @@ h2 {
 
 .icon-button {
   display: grid;
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
   border: 2px solid #b9c9e2;
   border-radius: 0.5rem;
@@ -415,6 +419,51 @@ h2 {
   text-align: left;
 }
 
+.records-panel {
+  margin: 1.25rem 0;
+  border: 2px solid var(--paper-deep);
+  border-radius: 0.8rem;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--paper) 74%, var(--gold));
+}
+
+.records-panel h3 {
+  margin: 0.2rem 0 0;
+  color: var(--navy);
+  font-family: 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
+  font-size: 1.25rem;
+}
+
+.records-stats {
+  margin: 0.7rem 0;
+  text-align: left;
+}
+
+.records-stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--paper-deep) 75%, var(--ink));
+  padding: 0.35rem 0;
+}
+
+.records-stats dt {
+  color: #4d5870;
+}
+
+.records-stats dd {
+  margin: 0;
+  color: var(--navy);
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.storage-status {
+  margin: 0.7rem 0 0;
+  color: #4d5870;
+  font-size: 0.82rem;
+}
+
 .result-stats {
   margin: 1.3rem auto;
   text-align: left;
@@ -441,7 +490,10 @@ h2 {
 
 @media (max-width: 900px), (max-height: 680px) {
   body {
-    padding: 0.5rem;
+    padding-top: max(env(safe-area-inset-top), 0.5rem);
+    padding-right: max(env(safe-area-inset-right), 0.5rem);
+    padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+    padding-left: max(env(safe-area-inset-left), 0.5rem);
   }
 
   #game-root {
@@ -468,24 +520,61 @@ h2 {
     align-items: baseline;
     gap: 0.2rem;
   }
+}
 
-  .hud-controls .icon-button {
-    width: 2.1rem;
-    height: 2.1rem;
+@media (max-height: 680px) and (orientation: landscape) {
+  .game-shell {
+    display: grid;
+    height: calc(100dvh - 1rem);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .stage-frame {
+    width: min(100%, calc((100dvh - 9rem) * 1.6));
+    align-self: center;
+    justify-self: center;
   }
 }
 
 @media (max-width: 667px) and (orientation: landscape) {
+  .hud {
+    display: grid;
+    grid-template-areas:
+      'round attempts controls'
+      'returned best controls';
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+    column-gap: 0.45rem;
+    row-gap: 0.15rem;
+  }
+
   .hud-brand {
     display: none;
   }
 
-  .hud-stat:nth-of-type(2) {
-    display: none;
+  .hud > .hud-stat:nth-of-type(2) {
+    display: flex;
+    grid-area: round;
+  }
+
+  .hud-attempts {
+    grid-area: attempts;
+  }
+
+  .hud > .hud-stat:nth-of-type(4) {
+    grid-area: returned;
+  }
+
+  .hud > .hud-stat:nth-of-type(5) {
+    grid-area: best;
+  }
+
+  .hud-controls {
+    grid-area: controls;
+    align-self: center;
   }
 
   .game-footer {
-    min-height: 2.2rem;
+    min-height: 3.2rem;
     font-size: 0.76rem;
   }
 
@@ -499,14 +588,23 @@ h2 {
 }
 
 @media (max-width: 767px) and (orientation: portrait) {
-  .game-shell:not([data-portrait-allowed='true']) .stage-frame::after {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background: rgba(17, 34, 61, 0.52);
-    color: var(--white);
-    content: '';
+  .hud {
+    gap: 0.35rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .hud-brand,
+  .hud > .hud-stat:nth-of-type(4),
+  .hud > .hud-stat:nth-of-type(5) {
+    display: none;
+  }
+
+  .hud-controls {
+    gap: 0.15rem;
+  }
+
+  .rotate-card {
+    width: min(88%, 24rem);
   }
 }
 

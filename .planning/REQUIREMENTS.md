@@ -68,23 +68,23 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 - [x] **UI-03**: The same primary-pointer interaction works with mouse, trackpad, pen, and touch.
 - [x] **UI-04**: Player can pause/resume, mute/unmute, and restart through labeled controls and
   keyboard shortcuts without accidental stage clicks.
-- [ ] **UI-05**: Title, HUD, stage, cards, and controls remain usable on current desktop viewports
+- [x] **UI-05**: Title, HUD, stage, cards, and controls remain usable on current desktop viewports
   and mobile landscape viewports down to 667 by 375 CSS pixels.
-- [ ] **UI-06**: The game honors `prefers-reduced-motion` and a saved override by reducing ambient
+- [x] **UI-06**: The game honors `prefers-reduced-motion` and a saved override by reducing ambient
   and cutscene motion while preserving essential target motion and state communication.
 
 ### Audio
 
 - [x] **AUDIO-01**: Start interaction unlocks a Web Audio context and all music/effects are
   synthesized or original local assets with no autoplay error or remote request.
-- [ ] **AUDIO-02**: Mute state persists when storage is available; hidden or manually paused play
+- [x] **AUDIO-02**: Mute state persists when storage is available; hidden or manually paused play
   suspends audio and resumes only when appropriate.
 
 ### Local Records
 
-- [ ] **SAVE-01**: Game stores best completed rounds, fastest successful find, lifetime catches,
+- [x] **SAVE-01**: Game stores best completed rounds, fastest successful find, lifetime catches,
   sound preference, and reduced-motion override under a versioned local schema.
-- [ ] **SAVE-02**: Unavailable, blocked, corrupt, or incompatible browser storage falls back to
+- [x] **SAVE-02**: Unavailable, blocked, corrupt, or incompatible browser storage falls back to
   validated defaults and in-memory state without preventing play.
 
 ### Distribution And Privacy
@@ -115,7 +115,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 - [x] **QUAL-01**: Automated unit tests cover click accounting, tenth-miss loss, last-click catch,
   state locks, round reset, seeded RNG, and build output invariants.
-- [ ] **QUAL-02**: Playwright covers successful capture, ten-miss escape, restart, persistence,
+- [x] **QUAL-02**: Playwright covers successful capture, ten-miss escape, restart, persistence,
   reduced motion, touch input, every scene, and direct-file execution with deterministic seeds.
 - [x] **QUAL-03**: Supported desktop play sustains a 60 FPS target and supported mobile landscape
   sustains a 30 FPS floor at the maximum 96-actor crowd under documented test hardware profiles.
@@ -185,12 +185,12 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | UI-02 | Phase 1 | Validated |
 | UI-03 | Phase 1 | Validated |
 | UI-04 | Phase 3 | Validated |
-| UI-05 | Phase 5 | Pending |
-| UI-06 | Phase 5 | Pending |
+| UI-05 | Phase 5 | Validated |
+| UI-06 | Phase 5 | Validated |
 | AUDIO-01 | Phase 3 | Validated |
-| AUDIO-02 | Phase 3 | Pending |
-| SAVE-01 | Phase 5 | Pending |
-| SAVE-02 | Phase 5 | Pending |
+| AUDIO-02 | Phase 3 | Validated |
+| SAVE-01 | Phase 5 | Validated |
+| SAVE-02 | Phase 5 | Validated |
 | DIST-01 | Phase 1 | Validated |
 | DIST-02 | Phase 5 | Pending |
 | DIST-03 | Phase 5 | Pending |
@@ -201,7 +201,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | CONT-03 | Phase 3 | Validated |
 | CONT-04 | Phase 3 | Validated |
 | QUAL-01 | Phase 1 | Validated |
-| QUAL-02 | Phase 5 | Pending |
+| QUAL-02 | Phase 5 | Validated |
 | QUAL-03 | Phase 2 | Validated |
 | QUAL-04 | Phase 5 | Pending |
 | QUAL-05 | Phase 3 | Validated |
@@ -209,10 +209,13 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 **Coverage:**
 
 - v1 requirements: 48 total
+- Validated locally: 44
+- Pending external/deployment review: 4
 - Mapped to phases: 48
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-07-31*  
-*Last updated: 2026-07-31 after Phase 4 technical verification; release persistence, accessibility,
-cross-browser hardening, and non-deployment packaging remain in Phase 5.*
+*Requirements defined: 2026-07-31*
+
+*Last updated: 2026-07-31 after Phase 5 local verification. Deployment and the remaining
+real-browser review requirements are intentionally pending by owner direction/environment limits.*
