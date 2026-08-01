@@ -323,6 +323,20 @@ h2 {
   background: color-mix(in srgb, var(--paper) 95%, var(--gold));
 }
 
+.pause-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.visibility-card {
+  z-index: 3;
+  min-width: min(20rem, 82vw);
+  background: color-mix(in srgb, var(--paper) 92%, var(--blue));
+}
+
 .rotate-card {
   z-index: 2;
 }

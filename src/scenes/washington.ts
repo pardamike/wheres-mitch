@@ -1,70 +1,142 @@
-import { createRng, deriveSeed } from '../core/rng';
+import type { DifficultyProfile } from '../core/types';
+import { PathNetwork, type RouteEdge, type RouteNode } from '../world/path-network';
+import {
+  createSceneInstance,
+  type BehaviorAnchor,
+  type SceneDefinition,
+  type SceneHideSpot,
+  type SceneInstance,
+  type SceneOccluder,
+} from '../world/scene';
 
-export type CrowdActivity = 'commute' | 'queue' | 'chat' | 'observe' | 'sit' | 'interact';
+const nodes: RouteNode[] = [
+  { id: 'metro', x: 252, y: 650, lane: 0, depthLane: 'front' },
+  { id: 'west-cross', x: 445, y: 644, lane: 1, depthLane: 'mid' },
+  { id: 'tree-west', x: 402, y: 493, lane: 1, depthLane: 'mid' },
+  { id: 'tree-west-peek', x: 500, y: 548, lane: 1, depthLane: 'mid' },
+  { id: 'shelter', x: 668, y: 550, lane: 1, depthLane: 'mid' },
+  { id: 'shelter-peek', x: 752, y: 562, lane: 1, depthLane: 'mid' },
+  { id: 'capitol-steps', x: 770, y: 554, lane: 0, depthLane: 'back' },
+  { id: 'mid-cross', x: 780, y: 630, lane: 1, depthLane: 'mid' },
+  { id: 'sign', x: 873, y: 578, lane: 1, depthLane: 'mid' },
+  { id: 'queue-a', x: 920, y: 676, lane: 2, depthLane: 'front' },
+  { id: 'queue-b', x: 963, y: 676, lane: 2, depthLane: 'front' },
+  { id: 'food-cart', x: 1056, y: 674, lane: 2, depthLane: 'front' },
+  { id: 'east-cross', x: 1160, y: 641, lane: 1, depthLane: 'mid' },
+  { id: 'tree-east', x: 1314, y: 520, lane: 1, depthLane: 'mid' },
+  { id: 'tree-east-peek', x: 1202, y: 568, lane: 1, depthLane: 'mid' },
+  { id: 'bench', x: 520, y: 758, lane: 2, depthLane: 'front' },
+  { id: 'newspapers', x: 398, y: 742, lane: 2, depthLane: 'front' },
+  { id: 'south-entry', x: 790, y: 786, lane: 2, depthLane: 'front' },
+  { id: 'northwest-entry', x: 300, y: 520, lane: 0, depthLane: 'back' },
+  { id: 'northeast-entry', x: 1130, y: 530, lane: 0, depthLane: 'back' },
+];
 
-export interface CrowdActorModel {
-  id: string;
-  x: number;
-  y: number;
-  lane: 'back' | 'mid';
-  scale: number;
-  color: string;
-  skin: string;
-  hair: string;
-  accessory: 'hat' | 'bag' | 'coffee' | 'camera' | 'none';
-  activity: CrowdActivity;
-  speed: number;
-  sway: number;
-  phase: number;
+const edges: RouteEdge[] = [
+  { from: 'metro', to: 'west-cross' },
+  { from: 'west-cross', to: 'tree-west' },
+  { from: 'tree-west', to: 'tree-west-peek' },
+  { from: 'west-cross', to: 'shelter' },
+  { from: 'shelter', to: 'shelter-peek' },
+  { from: 'west-cross', to: 'bench' },
+  { from: 'west-cross', to: 'newspapers' },
+  { from: 'tree-west', to: 'northwest-entry' },
+  { from: 'shelter', to: 'capitol-steps' },
+  { from: 'shelter', to: 'mid-cross' },
+  { from: 'capitol-steps', to: 'mid-cross' },
+  { from: 'mid-cross', to: 'sign' },
+  { from: 'mid-cross', to: 'queue-a' },
+  { from: 'mid-cross', to: 'south-entry' },
+  { from: 'sign', to: 'queue-a' },
+  { from: 'queue-a', to: 'queue-b' },
+  { from: 'queue-b', to: 'food-cart' },
+  { from: 'food-cart', to: 'east-cross' },
+  { from: 'east-cross', to: 'tree-east' },
+  { from: 'tree-east', to: 'tree-east-peek' },
+  { from: 'east-cross', to: 'northeast-entry' },
+  { from: 'east-cross', to: 'south-entry' },
+];
+
+const behaviorAnchors: BehaviorAnchor[] = [
+  { id: 'commute-metro', kind: 'commute', nodeId: 'metro' },
+  { id: 'commute-south', kind: 'commute', nodeId: 'south-entry' },
+  { id: 'commute-northwest', kind: 'commute', nodeId: 'northwest-entry' },
+  { id: 'commute-northeast', kind: 'commute', nodeId: 'northeast-entry' },
+  { id: 'queue-a', kind: 'queue', nodeId: 'queue-a' },
+  { id: 'queue-b', kind: 'queue', nodeId: 'queue-b' },
+  { id: 'chat-west', kind: 'conversation', nodeId: 'west-cross' },
+  { id: 'chat-east', kind: 'conversation', nodeId: 'east-cross' },
+  { id: 'sit-bench', kind: 'sit', nodeId: 'bench' },
+  { id: 'sit-metro', kind: 'sit', nodeId: 'metro' },
+  { id: 'interact-food', kind: 'interact', nodeId: 'food-cart' },
+  { id: 'interact-newspapers', kind: 'interact', nodeId: 'newspapers' },
+  { id: 'observe-capitol', kind: 'observe', nodeId: 'capitol-steps' },
+  { id: 'observe-sign', kind: 'observe', nodeId: 'sign' },
+];
+
+const hideSpots: SceneHideSpot[] = [
+  {
+    id: 'crosswalk-peek',
+    position: { x: 780, y: 630 },
+    approachNodeId: 'mid-cross',
+    revealRatio: 1,
+    weight: 1.4,
+  },
+  {
+    id: 'shelter-panel',
+    position: { x: 668, y: 550 },
+    peekNodeId: 'shelter-peek',
+    approachNodeId: 'shelter',
+    occluderId: 'shelter-panel',
+    revealRatio: 0.72,
+    weight: 1,
+  },
+  {
+    id: 'west-tree',
+    position: { x: 402, y: 493 },
+    peekNodeId: 'tree-west-peek',
+    approachNodeId: 'tree-west',
+    occluderId: 'west-tree',
+    revealRatio: 0.68,
+    weight: 0.9,
+  },
+  {
+    id: 'east-tree',
+    position: { x: 1314, y: 520 },
+    peekNodeId: 'tree-east-peek',
+    approachNodeId: 'tree-east',
+    occluderId: 'east-tree',
+    revealRatio: 0.7,
+    weight: 0.9,
+  },
+  {
+    id: 'food-queue',
+    position: { x: 963, y: 676 },
+    approachNodeId: 'queue-b',
+    revealRatio: 0.92,
+    weight: 1.1,
+  },
+];
+
+const occluders: SceneOccluder[] = [
+  { id: 'shelter-panel', nodeId: 'shelter', opaque: true },
+  { id: 'west-tree', nodeId: 'tree-west', opaque: true },
+  { id: 'east-tree', nodeId: 'tree-east', opaque: true },
+];
+
+const washingtonDefinition: SceneDefinition = {
+  id: 'washington',
+  title: 'WASHINGTON STREET',
+  routeNetwork: new PathNetwork(nodes, edges),
+  behaviorAnchors,
+  hideSpots,
+  occluders,
+};
+
+export function getWashingtonDefinition(): SceneDefinition {
+  return washingtonDefinition;
 }
 
-export interface WashingtonSceneModel {
-  id: 'washington';
-  title: 'WASHINGTON STREET';
-  seed: number;
-  actors: CrowdActorModel[];
-  mitchStart: { x: number; y: number };
-}
-
-const clothing = ['#D9443F', '#2E5EAA', '#557A46', '#F2C14E', '#8A5B9E', '#D4794A', '#4D718C'];
-const skinTones = ['#F2C7A5', '#D99D76', '#B97654', '#8C593F', '#F7D5B6'];
-const hairColors = ['#2E241E', '#4A3428', '#8A5A3B', '#C9B08A', '#172033'];
-const activities: CrowdActivity[] = ['commute', 'queue', 'chat', 'observe', 'sit', 'interact'];
-const accessories: CrowdActorModel['accessory'][] = ['hat', 'bag', 'coffee', 'camera', 'none'];
-
-export function createWashingtonScene(seed: number, actorCount = 40): WashingtonSceneModel {
-  const rng = createRng(deriveSeed(seed, 'washington-crowd'));
-  const actors: CrowdActorModel[] = [];
-
-  for (let index = 0; index < actorCount; index += 1) {
-    const lane = index % 3 === 0 ? 'back' : 'mid';
-    const queueActor = index < 7;
-    actors.push({
-      id: `washington-actor-${index}`,
-      x: queueActor ? 920 + index * 22 : rng.int(100, 1360),
-      y: queueActor
-        ? 610 + (index % 2) * 15
-        : lane === 'back'
-          ? rng.int(360, 535)
-          : rng.int(560, 765),
-      lane,
-      scale: lane === 'back' ? 0.68 + rng.next() * 0.16 : 0.8 + rng.next() * 0.24,
-      color: rng.pick(clothing),
-      skin: rng.pick(skinTones),
-      hair: rng.pick(hairColors),
-      accessory: rng.pick(accessories),
-      activity: queueActor ? 'queue' : rng.pick(activities),
-      speed: 0.35 + rng.next() * 0.75,
-      sway: 8 + rng.next() * 32,
-      phase: rng.next() * Math.PI * 2,
-    });
-  }
-
-  return {
-    id: 'washington',
-    title: 'WASHINGTON STREET',
-    seed,
-    actors,
-    mitchStart: { x: 700 + rng.int(-40, 41), y: 618 + rng.int(-25, 26) },
-  };
+export function createWashingtonScene(seed: number, difficulty: DifficultyProfile): SceneInstance {
+  return createSceneInstance(washingtonDefinition, seed, difficulty);
 }

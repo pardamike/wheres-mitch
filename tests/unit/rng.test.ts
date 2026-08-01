@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createRng, deriveSeed, parseSeedFromSearch, parseUint32 } from '../../src/core/rng';
+import {
+  createRng,
+  deriveSeed,
+  parseRoundFromSearch,
+  parseSeedFromSearch,
+  parseUint32,
+} from '../../src/core/rng';
 
 describe('seeded randomness', () => {
   it('reproduces the exact same sequence for the same seed', () => {
@@ -43,5 +49,8 @@ describe('seeded randomness', () => {
     expect(parseUint32(' 3')).toBeNull();
     expect(parseSeedFromSearch('?seed=324001')).toBe(324001);
     expect(parseSeedFromSearch('?seed=oops')).toBeNull();
+    expect(parseRoundFromSearch('?round=25')).toBe(25);
+    expect(parseRoundFromSearch('?round=0')).toBeNull();
+    expect(parseRoundFromSearch('?round=101')).toBeNull();
   });
 });

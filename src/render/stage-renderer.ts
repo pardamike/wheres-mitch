@@ -1,14 +1,12 @@
 import type { GameState, MissMarker } from '../core/types';
-import {
-  createWashingtonScene,
-  type CrowdActorModel,
-  type WashingtonSceneModel,
-} from '../scenes/washington';
+import type { CrowdActor } from '../world/actor';
+import type { SceneInstance } from '../world/scene';
 import { clearSvg, createSvgElement, findSvgLayer, setTransform, svgText } from './svg-dom';
 
 interface ActorNode {
-  model: CrowdActorModel;
+  actor: CrowdActor;
   element: SVGGElement;
+  layer: 'back' | 'mid' | 'front';
 }
 
 interface MissEffectNode {
@@ -16,6 +14,8 @@ interface MissEffectNode {
   ring: SVGCircleElement;
   cross: SVGTextElement;
   shownAtMs: number;
+  x: number;
+  y: number;
 }
 
 interface CutsceneNodes {
@@ -30,6 +30,7 @@ interface CutsceneNodes {
 
 const INK = '#172033';
 const PAPER = '#F7F0DE';
+const MITCH_SCALE = 0.55;
 
 function addShape(
   parent: SVGElement,
@@ -328,10 +329,10 @@ function drawStreetProps(parent: SVGElement): void {
   }
 }
 
-function drawTree(parent: SVGElement, x: number, y: number, scale: number): SVGGElement {
+function drawTree(id: string, x: number, y: number, scale: number): SVGGElement {
   const tree = createSvgElement('g', {
     transform: `translate(${x} ${y}) scale(${scale})`,
-    'data-occluder': 'tree',
+    'data-occluder': id,
   });
   addShape(tree, 'path', {
     d: 'M45 290 80 96l37 194z',
@@ -357,10 +358,10 @@ function drawTree(parent: SVGElement, x: number, y: number, scale: number): SVGG
   return tree;
 }
 
-function drawActor(model: CrowdActorModel): SVGGElement {
+function drawActor(model: CrowdActor): SVGGElement {
   const actor = createSvgElement('g', {
     id: model.id,
-    'data-actor': model.activity,
+    'data-actor': model.routine,
     'pointer-events': 'none',
   });
   addShape(actor, 'ellipse', { cx: 0, cy: 28, rx: 21, ry: 7, fill: '#172033', opacity: 0.16 });
@@ -550,7 +551,7 @@ function createMissPool(parent: SVGElement, count: number): MissEffectNode[] {
     });
     element.append(ring, cross);
     parent.append(element);
-    effects.push({ element, ring, cross, shownAtMs: Number.NEGATIVE_INFINITY });
+    effects.push({ element, ring, cross, shownAtMs: Number.NEGATIVE_INFINITY, x: 0, y: 0 });
   }
   return effects;
 }
@@ -713,7 +714,7 @@ export class StageRenderer {
   private actorNodes: ActorNode[] = [];
   private missEffects: MissEffectNode[] = [];
   private activeMissId = 0;
-  private activeScene: WashingtonSceneModel | null = null;
+  private activeScene: SceneInstance | null = null;
   private mitchRoot: SVGGElement | null = null;
   private mitchHitTarget: SVGCircleElement | null = null;
   private bus: SVGGElement | null = null;
@@ -730,8 +731,7 @@ export class StageRenderer {
     this.cutsceneLayer = findSvgLayer(stage, 'cutscene');
   }
 
-  buildWashington(seed: number): WashingtonSceneModel {
-    const scene = createWashingtonScene(seed);
+  buildWashington(scene: SceneInstance): SceneInstance {
     this.activeScene = scene;
     for (const layer of [
       this.backgroundLayer,
@@ -751,18 +751,18 @@ export class StageRenderer {
     this.taxi = vehicles.taxi;
     drawStreetProps(this.ambientLayer);
 
-    this.actorNodes = scene.actors.map((model) => {
-      const element = drawActor(model);
-      (model.lane === 'back' ? this.backActorsLayer : this.actorLayer).append(element);
-      return { model, element };
+    this.actorNodes = scene.actors.map((actor) => {
+      const element = drawActor(actor);
+      (actor.depthLane === 'back' ? this.backActorsLayer : this.actorLayer).append(element);
+      return { actor, element, layer: actor.depthLane };
     });
 
     const mitch = drawMitch();
     this.mitchRoot = mitch.root;
     this.mitchHitTarget = mitch.hitTarget;
     this.actorLayer.append(mitch.root);
-    this.occluderLayer.append(drawTree(this.occluderLayer, 1260, 387, 0.78));
-    this.occluderLayer.append(drawTree(this.occluderLayer, 337, 398, 0.65));
+    this.occluderLayer.append(drawTree('east-tree', 1260, 387, 0.78));
+    this.occluderLayer.append(drawTree('west-tree', 337, 398, 0.65));
 
     const shelterPanel = createSvgElement('rect', {
       x: 625,
@@ -770,7 +770,7 @@ export class StageRenderer {
       width: 92,
       height: 148,
       fill: '#F2C14E',
-      'fill-opacity': 0.28,
+      'fill-opacity': 1,
       stroke: 'none',
       'pointer-events': 'all',
       'data-occluder': 'shelter-panel',
@@ -789,16 +789,28 @@ export class StageRenderer {
     const seconds = clockMs / 1000;
     const crowdMotion = reducedMotion ? 0.7 : 1;
     for (const actor of this.actorNodes) {
-      const moving = actor.model.activity === 'commute' || actor.model.activity === 'interact';
-      const xOffset = moving
-        ? Math.sin(seconds * actor.model.speed * crowdMotion + actor.model.phase) * actor.model.sway
-        : 0;
-      const yOffset = Math.sin(seconds * 2.2 * crowdMotion + actor.model.phase) * 2.5;
-      const bob = moving ? Math.sin(seconds * 7 * crowdMotion + actor.model.phase) * 2 : 0;
+      const moving = actor.actor.pose === 'walk';
+      const bob = moving ? Math.sin(seconds * 7 * crowdMotion + actor.actor.phase) * 2 : 0;
+      const gesture = actor.actor.pose === 'react' ? Math.sin(seconds * 14) * 4 : 0;
+      const poseOffset = actor.actor.pose === 'sit' ? 12 : actor.actor.pose === 'queue' ? 3 : 0;
+      const poseTilt =
+        actor.actor.pose === 'chat'
+          ? Math.sin(seconds * 4 + actor.actor.phase) * 5
+          : actor.actor.pose === 'interact'
+            ? Math.sin(seconds * 3 + actor.actor.phase) * 3
+            : 0;
       setTransform(
         actor.element,
-        `translate(${actor.model.x + xOffset} ${actor.model.y + yOffset + bob}) scale(${actor.model.scale})`,
+        `translate(${actor.actor.position.x} ${actor.actor.position.y + bob + gesture + poseOffset}) rotate(${poseTilt}) scale(${actor.actor.scale * actor.actor.facing} ${actor.actor.scale})`,
       );
+      actor.element.setAttribute('data-pose', actor.actor.pose);
+      actor.element.setAttribute('data-actor', actor.actor.routine);
+      if (actor.layer !== actor.actor.depthLane) {
+        (actor.actor.depthLane === 'back' ? this.backActorsLayer : this.actorLayer).append(
+          actor.element,
+        );
+        actor.layer = actor.actor.depthLane;
+      }
     }
 
     if (this.bus) {
@@ -808,16 +820,17 @@ export class StageRenderer {
       setTransform(this.taxi, `translate(${1210 - ((clockMs * 0.017) % 780)} 687)`);
     }
 
-    const mitchWobble = Math.sin(seconds * 2.8) * 16;
-    const mitchScuttle = Math.sin(seconds * 1.15) * 48;
-    const mitchY = this.activeScene.mitchStart.y + Math.sin(seconds * 3.4) * 4;
+    const mitch = this.activeScene.mitch;
+    const mitchBob =
+      mitch.mode === 'transit' ? Math.sin(seconds * 10) * 2.5 : Math.sin(seconds * 3) * 1.5;
     setTransform(
       this.mitchRoot,
-      `translate(${this.activeScene.mitchStart.x + mitchScuttle} ${mitchY}) scale(1.02)`,
+      `translate(${mitch.position.x} ${mitch.position.y + mitchBob}) scale(${MITCH_SCALE})`,
     );
     this.mitchRoot.setAttribute('opacity', state.mode === 'mitch_escape' ? '0.45' : '1');
-    this.mitchRoot.style.pointerEvents = state.mode === 'playing' ? 'all' : 'none';
-    this.mitchHitTarget.setAttribute('r', String(69 + mitchWobble * 0.04));
+    this.mitchRoot.style.pointerEvents =
+      state.mode === 'playing' && mitch.clickable ? 'all' : 'none';
+    this.mitchHitTarget.setAttribute('r', String(69 * mitch.profile.hitboxScale));
 
     if (state.lastMiss && state.lastMiss.id !== this.activeMissId) {
       this.showMiss(state.lastMiss, clockMs);
@@ -835,6 +848,8 @@ export class StageRenderer {
       return;
     }
     effect.shownAtMs = clockMs;
+    effect.x = marker.x;
+    effect.y = marker.y;
     setTransform(effect.element, `translate(${marker.x} ${marker.y}) scale(1)`);
     effect.element.setAttribute('opacity', '1');
   }
@@ -848,10 +863,7 @@ export class StageRenderer {
       }
       const progress = elapsed / 300;
       const scale = 1 + progress * 0.56;
-      setTransform(
-        effect.element,
-        `${effect.element.getAttribute('transform')?.split(' scale')[0] ?? ''} scale(${scale})`,
-      );
+      setTransform(effect.element, `translate(${effect.x} ${effect.y}) scale(${scale})`);
       effect.ring.setAttribute('opacity', String(1 - progress));
       effect.cross.setAttribute('opacity', String(Math.max(0, 1 - progress * 1.65)));
     }

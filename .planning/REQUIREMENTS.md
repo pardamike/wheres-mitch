@@ -20,27 +20,27 @@ alive must be funny, fair at first, and immediately satisfying to replay.
   sequence exactly once.
 - [x] **LOOP-07**: Completed escape displays game-over statistics, local best, and a control that
   starts a clean run at round one.
-- [ ] **LOOP-08**: Manual pause and page invisibility stop simulation, timers, and audio without
+- [x] **LOOP-08**: Manual pause and page invisibility stop simulation, timers, and audio without
   consuming clicks or changing round state.
 
 ### Mitch Target And Difficulty
 
 - [x] **MITCH-01**: Player can recognize the target as an original caricatured Mitch McConnell
   head rigged onto an animated turtle body and shell.
-- [ ] **MITCH-02**: Mitch follows scene-valid routes between hiding spots instead of teleporting.
-- [ ] **MITCH-03**: Foreground props and people can genuinely occlude Mitch and prevent clicks
+- [x] **MITCH-02**: Mitch follows scene-valid routes between hiding spots instead of teleporting.
+- [x] **MITCH-03**: Foreground props and people can genuinely occlude Mitch and prevent clicks
   through visibly opaque objects.
-- [ ] **MITCH-04**: Early rounds bound full occlusion and provide findable transit/peek windows.
-- [ ] **MITCH-05**: Every completed round monotonically increases effective target difficulty;
+- [x] **MITCH-04**: Early rounds bound full occlusion and provide findable transit/peek windows.
+- [x] **MITCH-05**: Every completed round monotonically increases effective target difficulty;
   late rounds become intentionally faster than practical human tracking.
-- [ ] **MITCH-06**: Identical run seed, scene, and round inputs reproduce Mitch's route and timing.
+- [x] **MITCH-06**: Identical run seed, scene, and round inputs reproduce Mitch's route and timing.
 
 ### Living Scene Deck
 
 - [x] **WORLD-01**: Player can complete a round in an animated Washington street scene.
 - [ ] **WORLD-02**: Player can complete a round in an animated Kentucky county fair scene.
 - [ ] **WORLD-03**: Player can complete a round in an animated airport concourse scene.
-- [ ] **WORLD-04**: Each scene contains a performant crowd whose members walk, stop, queue, chat,
+- [x] **WORLD-04**: Each scene contains a performant crowd whose members walk, stop, queue, chat,
   sit, react, or interact with props rather than moving as undirected noise.
 - [ ] **WORLD-05**: Scene seed changes crowd identities, palettes, props, paths, and Mitch hiding
   choices while preserving the template's recognizable layout and valid routes.
@@ -117,7 +117,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
   state locks, round reset, seeded RNG, and build output invariants.
 - [ ] **QUAL-02**: Playwright covers successful capture, ten-miss escape, restart, persistence,
   reduced motion, touch input, every scene, and direct-file execution with deterministic seeds.
-- [ ] **QUAL-03**: Supported desktop play sustains a 60 FPS target and supported mobile landscape
+- [x] **QUAL-03**: Supported desktop play sustains a 60 FPS target and supported mobile landscape
   sustains a 30 FPS floor at the maximum 96-actor crowd under documented test hardware profiles.
 - [ ] **QUAL-04**: Release smoke matrix passes current stable Chrome, Edge, Firefox, and Safari with
   no uncaught errors and no required network request after initial hosted load.
@@ -164,17 +164,17 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | LOOP-05 | Phase 1 | Validated |
 | LOOP-06 | Phase 1 | Validated |
 | LOOP-07 | Phase 1 | Validated |
-| LOOP-08 | Phase 2 | Pending |
+| LOOP-08 | Phase 2 | Validated |
 | MITCH-01 | Phase 1 | Validated |
-| MITCH-02 | Phase 2 | Pending |
-| MITCH-03 | Phase 2 | Pending |
-| MITCH-04 | Phase 2 | Pending |
-| MITCH-05 | Phase 2 | Pending |
-| MITCH-06 | Phase 2 | Pending |
+| MITCH-02 | Phase 2 | Validated |
+| MITCH-03 | Phase 2 | Validated |
+| MITCH-04 | Phase 2 | Validated |
+| MITCH-05 | Phase 2 | Validated |
+| MITCH-06 | Phase 2 | Validated |
 | WORLD-01 | Phase 1 | Validated |
 | WORLD-02 | Phase 4 | Pending |
 | WORLD-03 | Phase 4 | Pending |
-| WORLD-04 | Phase 2 | Pending |
+| WORLD-04 | Phase 2 | Validated |
 | WORLD-05 | Phase 4 | Pending |
 | WORLD-06 | Phase 4 | Pending |
 | OUT-01 | Phase 3 | Pending |
@@ -202,7 +202,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | CONT-04 | Phase 3 | Pending |
 | QUAL-01 | Phase 1 | Validated |
 | QUAL-02 | Phase 5 | Pending |
-| QUAL-03 | Phase 2 | Pending |
+| QUAL-03 | Phase 2 | Validated |
 | QUAL-04 | Phase 5 | Pending |
 | QUAL-05 | Phase 3 | Pending |
 
@@ -214,4 +214,4 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ---
 *Requirements defined: 2026-07-31*  
-*Last updated: 2026-07-31 after initial roadmap mapping*
+*Last updated: 2026-07-31 after Phase 2 living-world verification*

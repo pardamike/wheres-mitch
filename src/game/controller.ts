@@ -1,21 +1,28 @@
-import { reduceGame, createInitialState, isStageInteractive } from '../core/reducer';
-import { createRunSeed, deriveSeed, parseSeedFromSearch } from '../core/rng';
+import { SimulationClock } from '../core/clock';
+import { difficultyForRound } from '../core/difficulty';
 import type { GameEvent } from '../core/events';
+import { createInitialState, isStageInteractive, reduceGame } from '../core/reducer';
+import { createRunSeed, deriveSeed, parseRoundFromSearch, parseSeedFromSearch } from '../core/rng';
 import type { MotionMode } from '../core/types';
+import { createWashingtonScene } from '../scenes/washington';
+import { StageRenderer } from '../render/stage-renderer';
+import { UiRenderer } from '../render/ui-renderer';
+import { mitchSnapshot } from '../world/mitch';
+import { reactToSceneMiss, updateScene, type SceneInstance } from '../world/scene';
+import { attachStageInput } from './input';
 import {
   recordCompletedRounds,
   recordSuccessfulCatch,
   withMotionMode,
   withSoundEnabled,
 } from './records';
-import { attachStageInput } from './input';
-import { StageRenderer } from '../render/stage-renderer';
-import { UiRenderer } from '../render/ui-renderer';
+import { attachVisibilityLifecycle } from './visibility';
 
 interface GameControllerNodes {
   root: HTMLElement;
   stage: SVGSVGElement;
   startButton: HTMLButtonElement;
+  playScreen: HTMLElement;
 }
 
 function requireControllerNode<T extends Element>(selector: string): T {
@@ -46,26 +53,32 @@ declare global {
 
 export class GameController {
   private state = createInitialState();
+  private scene: SceneInstance | null = null;
   private readonly nodes: GameControllerNodes;
   private readonly stageRenderer: StageRenderer;
   private readonly uiRenderer: UiRenderer;
+  private readonly clock = new SimulationClock();
   private frameHandle = 0;
-  private previousFrameMs: number | null = null;
   private modeElapsedMs = 0;
-  private hidden = document.hidden;
+  private visibilityCountdownMs = 0;
   private portraitAllowed = false;
   private readonly debugEnabled: boolean;
   private sceneTitle = 'WASHINGTON STREET';
+  private detachVisibility: (() => void) | null = null;
 
   constructor() {
     this.nodes = {
       root: requireControllerNode<HTMLElement>('#game-root'),
       stage: requireControllerNode<SVGSVGElement>('#game-stage'),
       startButton: requireControllerNode<HTMLButtonElement>('#start-button'),
+      playScreen: requireControllerNode<HTMLElement>('#play-screen'),
     };
     this.stageRenderer = new StageRenderer(this.nodes.stage);
     this.uiRenderer = new UiRenderer();
     this.debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
+    if (document.hidden) {
+      this.clock.pause('hidden');
+    }
   }
 
   start(): void {
@@ -85,9 +98,9 @@ export class GameController {
       onMiss: (point) => this.dispatch({ type: 'MISS', ...point }),
       onMitchCaught: () => this.dispatch({ type: 'MITCH_CAUGHT' }),
     });
-    document.addEventListener('visibilitychange', () => {
-      this.hidden = document.hidden;
-      this.previousFrameMs = null;
+    this.detachVisibility = attachVisibilityLifecycle({
+      onHidden: () => this.handleVisibilityHidden(),
+      onVisible: () => this.handleVisibilityVisible(),
     });
     window.addEventListener('keydown', (event) => this.handleKeyboard(event));
     window.addEventListener('resize', () => this.render());
@@ -97,11 +110,13 @@ export class GameController {
 
   destroy(): void {
     cancelAnimationFrame(this.frameHandle);
+    this.detachVisibility?.();
   }
 
   private startRun(): void {
     const requestedSeed = parseSeedFromSearch(window.location.search);
-    this.dispatch({ type: 'START_RUN', runSeed: requestedSeed ?? createRunSeed() });
+    const startingRound = parseRoundFromSearch(window.location.search) ?? undefined;
+    this.dispatch({ type: 'START_RUN', runSeed: requestedSeed ?? createRunSeed(), startingRound });
   }
 
   private handleAction(action: string): void {
@@ -161,7 +176,22 @@ export class GameController {
     if (previous.mode !== next.mode || previous.outcomeToken !== next.outcomeToken) {
       this.modeElapsedMs = 0;
     }
+    if (next.mode === 'paused' && previous.mode !== 'paused') {
+      this.clock.pause('manual');
+    }
+    if (previous.mode === 'paused' && next.mode !== 'paused') {
+      this.clock.resume('manual');
+    }
+    if (event.type === 'START_RUN' || event.type === 'RESTART') {
+      this.clock.reset();
+      if (document.hidden) {
+        this.clock.pause('hidden');
+      }
+    }
 
+    if (event.type === 'MISS' && this.scene) {
+      reactToSceneMiss(this.scene, event.x, event.y);
+    }
     if (event.type === 'MITCH_CAUGHT' && next.lastCaptureMs !== null) {
       this.state = reduceGame(this.state, {
         type: 'SET_RECORDS',
@@ -193,24 +223,40 @@ export class GameController {
     ) {
       this.prepareRound();
     }
+    if (event.type === 'BACK_TO_TITLE') {
+      this.scene = null;
+    }
     this.render();
   }
 
   private prepareRound(): void {
     const sceneSeed = deriveSeed(this.state.runSeed, `round-${this.state.round}-scene`);
-    const scene = this.stageRenderer.buildWashington(sceneSeed);
-    this.sceneTitle = scene.title;
-    this.dispatch({ type: 'ROUND_READY', sceneId: scene.id, sceneSeed });
+    const difficulty = difficultyForRound(this.state.completedRounds);
+    this.scene = createWashingtonScene(sceneSeed, difficulty);
+    this.stageRenderer.buildWashington(this.scene);
+    this.sceneTitle = this.scene.definition.title;
+    this.dispatch({ type: 'ROUND_READY', sceneId: this.scene.definition.id, sceneSeed });
   }
 
   private frame(timestamp: number): void {
-    const deltaMs =
-      this.previousFrameMs === null ? 0 : Math.min(50, timestamp - this.previousFrameMs);
-    this.previousFrameMs = timestamp;
-    if (!this.hidden && this.state.mode !== 'paused') {
-      this.modeElapsedMs += deltaMs;
+    const simulationDeltaMs = this.clock.tick(timestamp);
+    if (this.visibilityCountdownMs > 0 && !document.hidden) {
+      this.visibilityCountdownMs = Math.max(
+        0,
+        this.visibilityCountdownMs - this.clock.lastFrameDeltaMs,
+      );
+      if (this.visibilityCountdownMs === 0) {
+        this.clock.resume('visibility-countdown');
+      }
+      this.render();
+    }
+    if (simulationDeltaMs > 0) {
+      this.modeElapsedMs += simulationDeltaMs;
       if (this.state.mode === 'playing') {
-        this.state = reduceGame(this.state, { type: 'TICK', deltaMs });
+        this.state = reduceGame(this.state, { type: 'TICK', deltaMs: simulationDeltaMs });
+        if (this.scene) {
+          updateScene(this.scene, simulationDeltaMs);
+        }
       }
       if (
         this.state.mode === 'round_intro' &&
@@ -234,7 +280,7 @@ export class GameController {
     }
     this.stageRenderer.render(
       this.state,
-      timestamp,
+      this.clock.elapsedMs,
       this.modeElapsedMs,
       this.prefersReducedMotion(),
     );
@@ -242,15 +288,25 @@ export class GameController {
     this.frameHandle = requestAnimationFrame((nextTimestamp) => this.frame(nextTimestamp));
   }
 
-  private render(): void {
-    this.nodes.root
-      .closest<HTMLElement>('.game-shell')
-      ?.setAttribute('data-portrait-allowed', String(this.portraitAllowed));
-    const playScreen = document.querySelector<HTMLElement>('#play-screen');
-    if (playScreen) {
-      playScreen.dataset.portraitAllowed = String(this.portraitAllowed);
+  private handleVisibilityHidden(): void {
+    this.clock.pause('hidden');
+  }
+
+  private handleVisibilityVisible(): void {
+    this.clock.resume('hidden');
+    if (this.state.mode === 'playing' && !this.clock.reasons.includes('manual')) {
+      this.visibilityCountdownMs = 1500;
+      this.clock.pause('visibility-countdown');
     }
-    this.uiRenderer.render(this.state, this.sceneTitle);
+    this.render();
+  }
+
+  private render(): void {
+    this.nodes.playScreen.dataset.portraitAllowed = String(this.portraitAllowed);
+    this.uiRenderer.render(this.state, this.sceneTitle, {
+      portraitAllowed: this.portraitAllowed,
+      visibilityCountdownMs: this.visibilityCountdownMs,
+    });
     this.updateDebug();
   }
 
@@ -258,6 +314,7 @@ export class GameController {
     if (!this.debugEnabled) {
       return;
     }
+    const scene = this.scene;
     window.__WHERES_MITCH_DEBUG__ = Object.freeze({
       mode: this.state.mode,
       runSeed: this.state.runSeed,
@@ -266,7 +323,17 @@ export class GameController {
       sceneSeed: this.state.sceneSeed,
       clicksRemaining: this.state.clicksRemaining,
       completedRounds: this.state.completedRounds,
-      actorCount: 40,
+      difficulty: scene ? Object.freeze({ ...scene.difficulty }) : null,
+      actorCount: scene?.actors.length ?? 0,
+      actorRoutines:
+        scene?.actors.slice(0, 12).map((actor) => `${actor.id}:${actor.routine}`) ?? [],
+      mitch: scene ? mitchSnapshot(scene.mitch) : null,
+      clock: Object.freeze({
+        elapsedMs: this.clock.elapsedMs,
+        lastFrameDeltaMs: this.clock.lastFrameDeltaMs,
+        paused: this.clock.isPaused,
+        reasons: this.clock.reasons,
+      }),
       reducedMotion: this.prefersReducedMotion(),
     });
   }

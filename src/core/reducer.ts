@@ -14,18 +14,20 @@ function retainSettings(
   };
 }
 
-function createFreshRun(runSeed: number, state: GameState): GameState {
+function createFreshRun(runSeed: number, state: GameState, requestedRound = 1): GameState {
+  const round = Number.isInteger(requestedRound) && requestedRound >= 1 ? requestedRound : 1;
   return {
     ...retainSettings(state),
     mode: 'round_intro',
     pausedMode: null,
     runSeed: runSeed >>> 0,
-    round: 1,
-    completedRounds: 0,
+    round,
+    completedRounds: round - 1,
     clicksRemaining: attemptsPerRound,
     totalAttempts: 0,
     roundAttempts: 0,
     catches: 0,
+    fastestRunFindMs: null,
     roundStartedAtMs: null,
     visibleRoundElapsedMs: 0,
     sceneId: null,
@@ -47,6 +49,7 @@ export function createInitialState(records: Records = DEFAULT_RECORDS): GameStat
     totalAttempts: 0,
     roundAttempts: 0,
     catches: 0,
+    fastestRunFindMs: null,
     roundStartedAtMs: null,
     visibleRoundElapsedMs: 0,
     sceneId: null,
@@ -75,7 +78,7 @@ export function reduceGame(state: GameState, event: GameEvent): GameState {
 
     case 'START_RUN':
       return state.mode === 'title' || state.mode === 'game_over'
-        ? createFreshRun(event.runSeed, state)
+        ? createFreshRun(event.runSeed, state, event.startingRound)
         : state;
 
     case 'ROUND_READY':
@@ -126,6 +129,11 @@ export function reduceGame(state: GameState, event: GameEvent): GameState {
             ...state,
             mode: 'player_capture',
             catches: state.catches + 1,
+            fastestRunFindMs:
+              state.fastestRunFindMs === null ||
+              state.visibleRoundElapsedMs < state.fastestRunFindMs
+                ? state.visibleRoundElapsedMs
+                : state.fastestRunFindMs,
             totalAttempts: state.totalAttempts + 1,
             roundAttempts: state.roundAttempts + 1,
             lastCaptureMs: state.visibleRoundElapsedMs,
@@ -165,10 +173,12 @@ export function reduceGame(state: GameState, event: GameEvent): GameState {
         : state;
 
     case 'RESTART':
-      return state.mode === 'boot' ? state : createFreshRun(event.runSeed, state);
+      return state.mode === 'boot'
+        ? state
+        : createFreshRun(event.runSeed, state, event.startingRound);
 
     case 'BACK_TO_TITLE':
-      return state.mode === 'game_over'
+      return state.mode === 'game_over' || state.mode === 'paused'
         ? {
             ...createInitialState(state.records),
             outcomeToken: state.outcomeToken + 1,

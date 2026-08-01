@@ -18,6 +18,19 @@ describe('ten-click game reducer', () => {
     expect(state.sceneId).toBeNull();
   });
 
+  it('supports a validated debug starting round without changing click accounting', () => {
+    const state = reduceGame(createInitialState(), {
+      type: 'START_RUN',
+      runSeed: 9,
+      startingRound: 25,
+    });
+
+    expect(state.round).toBe(25);
+    expect(state.completedRounds).toBe(24);
+    expect(state.clicksRemaining).toBe(10);
+    expect(state.totalAttempts).toBe(0);
+  });
+
   it('counts nine misses, then atomically locks the tenth miss into escape', () => {
     let state = readyPlayingState();
     for (let index = 0; index < 9; index += 1) {
@@ -96,5 +109,15 @@ describe('ten-click game reducer', () => {
     expect(state.totalAttempts).toBe(0);
     expect(state.soundEnabled).toBe(false);
     expect(state.clicksRemaining).toBe(10);
+  });
+
+  it('returns to the title cleanly from a paused run', () => {
+    let state = readyPlayingState();
+    state = reduceGame(state, { type: 'PAUSE' });
+    state = reduceGame(state, { type: 'BACK_TO_TITLE' });
+
+    expect(state.mode).toBe('title');
+    expect(state.sceneId).toBeNull();
+    expect(state.totalAttempts).toBe(0);
   });
 });

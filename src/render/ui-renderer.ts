@@ -1,5 +1,10 @@
 import type { GameState } from '../core/types';
 
+export interface UiRenderOptions {
+  portraitAllowed: boolean;
+  visibilityCountdownMs: number;
+}
+
 interface UiNodes {
   root: HTMLElement;
   titleScreen: HTMLElement;
@@ -13,6 +18,9 @@ interface UiNodes {
   roundCardKicker: HTMLElement;
   roundCardTitle: HTMLElement;
   pauseCard: HTMLElement;
+  visibilityCard: HTMLElement;
+  visibilityCardKicker: HTMLElement;
+  visibilityCardTitle: HTMLElement;
   gameOverCard: HTMLElement;
   footerInstruction: HTMLElement;
   gameStatus: HTMLElement;
@@ -78,6 +86,9 @@ export class UiRenderer {
       roundCardKicker: requireNode<HTMLElement>('#round-card-kicker'),
       roundCardTitle: requireNode<HTMLElement>('#round-card-title'),
       pauseCard: requireNode<HTMLElement>('#pause-card'),
+      visibilityCard: requireNode<HTMLElement>('#visibility-card'),
+      visibilityCardKicker: requireNode<HTMLElement>('#visibility-card-kicker'),
+      visibilityCardTitle: requireNode<HTMLElement>('#visibility-card-title'),
       gameOverCard: requireNode<HTMLElement>('#game-over-card'),
       footerInstruction: requireNode<HTMLElement>('#footer-instruction'),
       gameStatus: requireNode<HTMLElement>('#game-status'),
@@ -95,7 +106,11 @@ export class UiRenderer {
     };
   }
 
-  render(state: GameState, sceneTitle = 'WASHINGTON STREET'): void {
+  render(
+    state: GameState,
+    sceneTitle = 'WASHINGTON STREET',
+    options: UiRenderOptions = { portraitAllowed: false, visibilityCountdownMs: 0 },
+  ): void {
     const isTitle = state.mode === 'title' || state.mode === 'boot';
     this.nodes.root.dataset.mode = state.mode;
     this.nodes.root.dataset.gameState = state.mode;
@@ -113,6 +128,15 @@ export class UiRenderer {
     this.nodes.roundCardTitle.textContent = sceneTitle;
     this.nodes.roundCard.hidden = state.mode !== 'round_intro' || !state.sceneId;
     this.nodes.pauseCard.hidden = state.mode !== 'paused';
+    this.nodes.visibilityCard.hidden = options.visibilityCountdownMs <= 0;
+    this.nodes.visibilityCardKicker.textContent =
+      options.visibilityCountdownMs > 1000
+        ? 'READY'
+        : options.visibilityCountdownMs > 500
+          ? 'SET'
+          : 'FIND!';
+    this.nodes.visibilityCardTitle.textContent =
+      options.visibilityCountdownMs > 500 ? 'Mitch is moving again…' : 'GO!';
     this.nodes.gameOverCard.hidden = state.mode !== 'game_over';
     this.nodes.footerInstruction.textContent = `Find the turtle. Wrong clicks: ${10 - state.clicksRemaining}/10.`;
 
@@ -122,7 +146,7 @@ export class UiRenderer {
     this.nodes.resultAttempts.textContent = String(state.totalAttempts);
     this.nodes.resultAccuracy.textContent = `${accuracy}%`;
     this.nodes.resultFastest.textContent = formatDuration(
-      state.lastCaptureMs ?? state.records.fastestFindMs,
+      state.fastestRunFindMs ?? state.records.fastestFindMs,
     );
     this.nodes.resultBest.textContent = String(state.records.bestRounds);
 

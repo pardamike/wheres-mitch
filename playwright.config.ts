@@ -7,7 +7,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  timeout: 20_000,
+  timeout: 45_000,
   use: {
     trace: 'retain-on-failure',
     viewport: { width: 1440, height: 1000 },
@@ -15,7 +15,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testMatch: /vertical-slice\.spec\.ts/,
+      testMatch: /(vertical-slice|occlusion|pause|performance)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:4173' },
     },
     {

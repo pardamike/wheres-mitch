@@ -74,6 +74,11 @@ export function parseSeedFromSearch(search: string): number | null {
   return parseUint32(new URLSearchParams(search).get('seed'));
 }
 
+export function parseRoundFromSearch(search: string): number | null {
+  const value = parseUint32(new URLSearchParams(search).get('round'));
+  return value !== null && value >= 1 && value <= 100 ? value : null;
+}
+
 export function createRunSeed(now = Date.now()): number {
   const values = new Uint32Array(1);
   if (globalThis.crypto?.getRandomValues) {

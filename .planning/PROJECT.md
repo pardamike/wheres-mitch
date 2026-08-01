@@ -22,11 +22,16 @@ fair at first, and immediately satisfying to replay.
   title disclaimer, and mouse/touch pointer path (Phase 1 verification).
 - [x] A dependency-free runtime that builds as a classic IIFE and passes direct-`file://` no-network
   smoke coverage (Phase 1 verification).
+- [x] A deterministic Washington crowd with authored routes, six behavior families, layered
+  occlusion, and a reproducible Turtle Mitch route/hide loop (Phase 2 verification).
+- [x] Formula-driven difficulty from a readable opening through an intentionally absurd late game,
+  plus true pause/visibility suspension (Phase 2 verification).
+- [x] A measured 96-actor SVG performance profile with stable DOM counts at desktop and compact
+  landscape sizes (Phase 2 verification; see `docs/PERFORMANCE.md`).
 
 ### Active
 
 - [ ] Three animated, procedurally varied settings populated by convincing crowd behavior.
-- [ ] Turtle Mitch movement and hiding that scales from approachable to absurdly impossible.
 - [ ] Memorable Capitol-return and helicopter-escape outcome animations.
 - [ ] Original visual/audio assets and visible fictional-satire framing.
 - [ ] A dependency-free runtime that works from `file://`, Cloudflare Pages, and S3/CloudFront.
@@ -113,4 +118,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Decide whether more scenes improve the joke or only add maintenance.
 
 ---
-*Last updated: 2026-07-31 after Phase 1 vertical-slice verification*
+*Last updated: 2026-07-31 after Phase 2 living-world verification*

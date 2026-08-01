@@ -39,6 +39,7 @@ export interface GameState {
   totalAttempts: number;
   roundAttempts: number;
   catches: number;
+  fastestRunFindMs: number | null;
   roundStartedAtMs: number | null;
   visibleRoundElapsedMs: number;
   sceneId: SceneId | null;
