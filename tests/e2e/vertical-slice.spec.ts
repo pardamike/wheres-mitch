@@ -5,6 +5,10 @@ async function startSeededRound(page: Page) {
   await page.goto('/?seed=324001&scene=washington&debug=1');
   await expect(page.getByRole('heading', { name: "WHERE'S MITCH?" })).toBeVisible();
   await expect(page.getByText('Ten clicks. One extremely evasive turtle.')).toBeVisible();
+  await expect(page.locator('#title-mitch-head')).toHaveAttribute(
+    'href',
+    './assets/mitch-head.png',
+  );
   await expect(page.locator('#title-screen .disclaimer')).toContainText(
     'fictional political satire',
   );

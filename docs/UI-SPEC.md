@@ -111,7 +111,7 @@ Desktop composition:
 │                   WHERE'S MITCH?                             │
 │          Ten clicks. One extremely evasive turtle.           │
 │                                                              │
-│       [small animated Turtle Mitch shell/peek vignette]       │
+│       [small cutout-head Turtle Mitch shell/peek vignette]    │
 │                                                              │
 │                    [ START THE SEARCH ]                       │
 │                  [sound] [motion] [how to play]               │

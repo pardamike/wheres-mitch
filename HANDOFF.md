@@ -5,7 +5,8 @@
 **Branch:** `main`
 
 **Status:** All five gameplay phases are implemented. Phase 5 local QA and the owner-supplied Mitch
-cutout, opening-evasion, and viewport-fit update are locally verified; no deployment was performed.
+cutout, opening-evasion, viewport-fit, title-cover, and footer-border updates are locally verified;
+no deployment was performed.
 
 ## Non-negotiables
 
@@ -43,7 +44,8 @@ run `npm run verify` before an implementation commit, and push only directly to 
 - Mitch now uses the owner-supplied local head cutout on an original green/gold retro-arcade shell.
   Round one starts denser and faster, immediately favors a real occluder, and uses a tighter target.
 - The game shell now fills its usable viewport height without exceeding it; the 16:10 stage scales
-  down before it can push the HUD or footer below the viewport.
+  down before it can push the HUD or footer below the viewport. The title vignette matches the
+  cutout-head turtle treatment, and the footer has a visible full-width top edge.
 - `dist/` remains generated and ignored. `npm run build` recreates it.
 
 ## Current verification state
@@ -60,11 +62,11 @@ experience`) is pushed to `main`, with verification notes in `8a5d76c`. `npm run
 gate and created the ignored local `release/wheres-mitch-v1.0.0.zip` plus SHA-256 checksum. The ZIP
 was unpacked and smoke-tested under `file://`; it has not been deployed.
 
-On 2026-08-01, `npm run verify` passed again after the Mitch cutout, hunt-tuning, and viewport-fit
-update: 18 Vitest files / 64 tests, the 36-test Chromium/touch matrix, Chrome/Firefox hosted smoke,
-and Chrome/Firefox direct-file smoke. The checked artifact includes the relative
-`assets/mitch-head.png` file and rejects remote or unexpected requests. The older local ZIP predates
-this asset update and was intentionally not regenerated.
+On 2026-08-01, `npm run verify` passed again after the Mitch cutout, hunt-tuning, viewport-fit,
+title-cover, and footer-border update: 18 Vitest files / 64 tests, the 36-test Chromium/touch
+matrix, Chrome/Firefox hosted smoke, and Chrome/Firefox direct-file smoke. The checked artifact
+includes the relative `assets/mitch-head.png` file and rejects remote or unexpected requests. The
+older local ZIP predates this asset update and was intentionally not regenerated.
 
 ## Known release-review boundaries
 
@@ -86,7 +88,8 @@ this asset update and was intentionally not regenerated.
 | Scene deck/variety | `6bdee96` | Fair/airport, seeded variation, no-repeat deck |
 | Release polish | `e26486f` | Local storage, accessibility/responsiveness, artifact/browser QA |
 | Local package | ignored output | `wheres-mitch-v1.0.0.zip`, checksum verified, extracted file smoke passed |
-| Mitch cutout, hunt, and viewport tuning | this commit | Owner-supplied local head, original green/gold shell, dense/fast opening, full-height no-scroll game shell, full local verification |
+| Mitch cutout, hunt, and viewport tuning | `d723b7e` | Owner-supplied local head, original green/gold shell, dense/fast opening, full-height no-scroll game shell, full local verification |
+| Cover and footer polish | this commit | Title uses the new cutout-head turtle; footer top border restored; full local verification |
 
 ## Resume order
 

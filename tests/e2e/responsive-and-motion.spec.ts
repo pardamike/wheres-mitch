@@ -20,6 +20,9 @@ test('keeps the complete stage and 44px controls usable across release landscape
     const stage = page.locator('#game-stage');
     const stageBox = await stage.boundingBox();
     const footerBox = await page.locator('.game-footer').boundingBox();
+    const footerTopBorder = await page
+      .locator('.game-footer')
+      .evaluate((element) => Number.parseFloat(getComputedStyle(element).borderTopWidth));
     const gameRootBox = await page.locator('#game-root').boundingBox();
     const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
     const controls = page.locator('.hud-controls .icon-button');
@@ -35,6 +38,7 @@ test('keeps the complete stage and 44px controls usable across release landscape
     expect((stageBox?.width ?? 0) / (stageBox?.height ?? 1)).toBeLessThan(1.62);
     expect(footerBox?.y).toBeGreaterThanOrEqual((stageBox?.y ?? 0) + (stageBox?.height ?? 0));
     expect((footerBox?.y ?? 0) + (footerBox?.height ?? 0)).toBeLessThanOrEqual(viewport.height + 1);
+    expect(footerTopBorder).toBeGreaterThan(0);
     expect((gameRootBox?.y ?? 0) + (gameRootBox?.height ?? 0)).toBeLessThanOrEqual(
       viewport.height + 1,
     );
