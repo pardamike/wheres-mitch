@@ -13,7 +13,7 @@ initially fair, and immediately satisfying to replay.
 
 - **Milestone:** v1
 - **Phase:** 5 of 5
-- **State:** Local game implementation, verification, and Phase 5 commit/push complete; package pending
+- **State:** Local game implementation, verification, commit/push, and package complete; external review pending
 - **Plans:** 15 prepared across five phases
 - **Implementation commits:** 5 committed
 - **Requirements:** 44 validated locally, 4 pending external/deployment review, 48 mapped
@@ -35,8 +35,9 @@ versioned optional records/settings, reset, storage fallback, responsive/reduced
 focus handling, artifact verification, and local packaging. Desktop, compact landscape, and portrait
 screenshots were technically inspected.
 
-**Resume from:** Phase 5 is committed and pushed as `e26486f`. From a clean worktree, run
-`npm run package` to create the ignored local ZIP/checksum; do not deploy it.
+**Resume from:** Phase 5 is committed and pushed as `e26486f`. The ignored local ZIP/checksum has
+been created and extracted-smoke-tested. Do not deploy it; resume only for owner review or an
+explicitly authorized future hosting pass.
 
 **Review gate:** Owner visual/tone approval, real Safari/Edge, and real-mobile smoke remain pending.
 Playwright WebKit cannot launch on this macOS 14 ARM environment because its frozen build exits with
@@ -44,8 +45,8 @@ a bus error. Deployment requirements DIST-03/DIST-04 remain intentionally pendin
 
 ## Next Action
 
-Package locally from the clean commit, then keep this diary concise and truthful; never represent
-pending human/external review as complete.
+Wait for owner visual/tone review or explicit next work. Keep this diary concise and truthful; never
+represent pending human/external review as complete.
 
 ---
 

@@ -4,8 +4,8 @@
 
 **Branch:** `main`
 
-**Status:** All five gameplay phases are implemented. Phase 5 local QA is verified, committed, and
-pushed; local ZIP/checksum packaging is the remaining in-scope handoff step.
+**Status:** All five gameplay phases are implemented. Phase 5 local QA is verified, committed,
+pushed, and packaged locally; no deployment was performed.
 
 ## Non-negotiables
 
@@ -52,8 +52,9 @@ Already passed during this phase:
 - hosted Chrome and Firefox end-to-end smoke; direct-file Chrome and Firefox smoke.
 
 `npm run verify` passed on the Phase 5 source commit. Commit `e26486f` (`feat: polish local release
-experience`) is pushed to `main`. `npm run package` must be run only from this clean committed
-worktree; it creates ignored local output and never deploys.
+experience`) is pushed to `main`, with verification notes in `8a5d76c`. `npm run package` reran the
+gate and created the ignored local `release/wheres-mitch-v1.0.0.zip` plus SHA-256 checksum. The ZIP
+was unpacked and smoke-tested under `file://`; it has not been deployed.
 
 ## Known release-review boundaries
 
@@ -74,6 +75,7 @@ worktree; it creates ignored local output and never deploys.
 | Outcomes/audio | `a757e47` | Original art, capture/escape, audio, controls |
 | Scene deck/variety | `6bdee96` | Fair/airport, seeded variation, no-repeat deck |
 | Release polish | `e26486f` | Local storage, accessibility/responsiveness, artifact/browser QA |
+| Local package | ignored output | `wheres-mitch-v1.0.0.zip`, checksum verified, extracted file smoke passed |
 
 ## Resume order
 

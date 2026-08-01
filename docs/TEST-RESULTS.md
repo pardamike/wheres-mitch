@@ -24,6 +24,21 @@
 The build verifier confirms a classic IIFE with only relative asset references and rejects remote
 URLs, fetch/XHR/WebSocket primitives, workers, source maps, modules, and unexpected artifact files.
 
+## Local package evidence
+
+`npm run package` reran the complete release gate and produced ignored local output:
+
+```text
+release/wheres-mitch-v1.0.0.zip
+release/wheres-mitch-v1.0.0.sha256
+SHA-256: df6e2ec2826c7ff56a1a5d8af7d33036188a2e2a5430b7bb7808820a9efcd56d
+```
+
+The checksum was independently recomputed, and the archive lists exactly `404.html`, `_headers`,
+`favicon.svg`, `game.js`, `index.html`, and `styles.css` at its root. An extracted archive completed
+a direct-file catch smoke with zero remote requests and zero console/page errors. The temporary
+extraction was removed after verification.
+
 ## Responsive and accessibility evidence
 
 - Automated layout assertions passed at 1440×1000, 1024×768, 844×390, and 667×375.
