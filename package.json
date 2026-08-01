@@ -1,0 +1,35 @@
+{
+  "name": "wheres-mitch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A standalone, original animated hidden-object political satire.",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/dev.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests scripts playwright.config.ts vitest.config.mts --max-warnings=0",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:e2e": "playwright test --project=chromium",
+    "test:file": "PLAYWRIGHT_FILE_TEST=1 playwright test tests/e2e/file-smoke.spec.ts --project=file",
+    "package": "node scripts/package-release.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test:run && npm run build && npm run test:e2e && npm run test:file"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.1.2",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^4.1.10"
+  }
+}

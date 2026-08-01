@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="An original, standalone animated hidden-object political satire."
+    />
+    <title>Where's Mitch?</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./game.js"></script>
+  </head>
+  <body>
+    <main id="game-root" data-mode="boot" data-game-state="boot">
+      <p id="game-status" class="screen-reader-only" aria-live="polite"></p>
+
+      <section id="title-screen" class="title-card" aria-labelledby="game-title">
+        <p class="eyebrow">A LOCAL-ONLY CARTOON SEARCH</p>
+        <h1 id="game-title">WHERE'S MITCH?</h1>
+        <p class="subtitle">Ten clicks. One extremely evasive turtle.</p>
+        <div class="title-vignette" aria-hidden="true">
+          <svg viewBox="0 0 260 150" role="presentation">
+            <path d="M0 106h260v44H0z" fill="#b7d0b1" />
+            <path d="M0 102 50 66l42 25 57-59 55 50 56-24v48z" fill="#7998c8" opacity=".75" />
+            <ellipse
+              cx="133"
+              cy="104"
+              rx="65"
+              ry="28"
+              fill="#765238"
+              stroke="#172033"
+              stroke-width="4"
+            />
+            <path d="M85 104h96M100 82l24 44M156 82l-24 44" stroke="#9b744d" stroke-width="4" />
+            <ellipse
+              cx="73"
+              cy="108"
+              rx="18"
+              ry="12"
+              fill="#718c51"
+              stroke="#172033"
+              stroke-width="4"
+            />
+            <circle cx="51" cy="99" r="18" fill="#f1c6a4" stroke="#172033" stroke-width="4" />
+            <path d="M37 90c7-14 26-14 33 1" fill="#e4d1bb" stroke="#172033" stroke-width="3" />
+            <path d="M43 105h7M58 105h7" stroke="#172033" stroke-linecap="round" stroke-width="3" />
+            <path d="m50 114 9 1" stroke="#a3443b" stroke-linecap="round" stroke-width="3" />
+            <path
+              d="m73 115 17 10M160 119l20 9M105 128l-9 12M147 128l9 12"
+              stroke="#718c51"
+              stroke-linecap="round"
+              stroke-width="8"
+            />
+          </svg>
+        </div>
+        <p class="title-instruction">Find Turtle Mitch before your ten clicks run out.</p>
+        <div class="rule-strip" aria-label="How to play">
+          <span><strong>10</strong> clicks</span>
+          <span>Wrong clicks count</span>
+          <span>Each round gets wilder</span>
+        </div>
+        <button id="start-button" type="button" class="primary-button">START THE SEARCH</button>
+        <div class="title-settings" aria-label="Game settings">
+          <button type="button" class="text-button" data-action="title-sound">SOUND: ON</button>
+          <button type="button" class="text-button" data-action="title-motion">
+            MOTION: SYSTEM
+          </button>
+        </div>
+        <p class="privacy-note">No accounts. No tracking. No network required.</p>
+        <p class="disclaimer">
+          Where's Mitch? is an absurd work of fictional political satire. All characters and events
+          are exaggerated and invented. This game is not affiliated with or endorsed by Mitch
+          McConnell, Elaine Chao, the U.S. Senate, the U.S. government, the Chinese government, or
+          any other depicted person or institution.
+        </p>
+      </section>
+
+      <section id="play-screen" class="game-shell" hidden aria-label="Where's Mitch game">
+        <header class="hud" aria-label="Game status and controls">
+          <div class="hud-brand">WHERE'S MITCH?</div>
+          <div class="hud-stat"><span>ROUND</span><strong id="round-number">1</strong></div>
+          <div class="hud-attempts">
+            <span>CLICKS LEFT</span>
+            <strong id="clicks-remaining">10</strong>
+            <span id="attempt-dots" aria-hidden="true">●●●●●●●●●●</span>
+          </div>
+          <div class="hud-stat"><span>RETURNED</span><strong id="completed-rounds">0</strong></div>
+          <div class="hud-stat"><span>BEST</span><strong id="best-rounds">0</strong></div>
+          <div class="hud-controls">
+            <button type="button" class="icon-button" data-action="pause" aria-label="Pause game">
+              Ⅱ
+            </button>
+            <button type="button" class="icon-button" data-action="mute" aria-label="Mute sound">
+              ♪
+            </button>
+            <button
+              type="button"
+              class="icon-button"
+              data-action="restart"
+              aria-label="Restart run"
+            >
+              ↻
+            </button>
+          </div>
+        </header>
+
+        <div class="stage-frame">
+          <svg
+            id="game-stage"
+            data-game-stage
+            viewBox="0 0 1440 900"
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+          >
+            <g data-layer="background"></g>
+            <g data-layer="far-ambient"></g>
+            <g data-layer="back-actors"></g>
+            <g data-layer="target-and-actors"></g>
+            <g data-layer="front-occluders"></g>
+            <g data-layer="effects"></g>
+            <g data-layer="cutscene"></g>
+          </svg>
+          <div id="round-card" class="stage-card" hidden>
+            <p id="round-card-kicker">ROUND 1</p>
+            <strong id="round-card-title">WASHINGTON STREET</strong>
+          </div>
+          <div id="pause-card" class="stage-card pause-card" hidden>
+            <p>PAUSED</p>
+            <strong>Mitch is still in there.</strong>
+            <button type="button" class="primary-button" data-action="resume">RESUME</button>
+          </div>
+          <div id="rotate-card" class="stage-card rotate-card" hidden>
+            <p>FOR THE FULL SEARCH</p>
+            <strong>Rotate your device.</strong>
+            <button type="button" class="text-button" data-action="continue-portrait">
+              CONTINUE ANYWAY
+            </button>
+          </div>
+        </div>
+
+        <footer class="game-footer">
+          <span id="footer-instruction">Find the turtle. Wrong clicks: 0/10.</span>
+          <button type="button" class="text-button" data-action="pause">PAUSE</button>
+        </footer>
+
+        <section id="game-over-card" class="result-card" hidden aria-labelledby="game-over-title">
+          <p class="eyebrow">THE GREAT GETAWAY</p>
+          <h2 id="game-over-title">MITCH GOT AWAY</h2>
+          <dl class="result-stats">
+            <div>
+              <dt>Returned to the Capitol</dt>
+              <dd id="result-rounds">0</dd>
+            </div>
+            <div>
+              <dt>Attempts</dt>
+              <dd id="result-attempts">0</dd>
+            </div>
+            <div>
+              <dt>Accuracy</dt>
+              <dd id="result-accuracy">0%</dd>
+            </div>
+            <div>
+              <dt>Fastest find</dt>
+              <dd id="result-fastest">—</dd>
+            </div>
+            <div>
+              <dt>Best run</dt>
+              <dd id="result-best">0</dd>
+            </div>
+          </dl>
+          <button type="button" class="primary-button" data-action="search-again">
+            SEARCH AGAIN
+          </button>
+          <button type="button" class="text-button" data-action="back-title">BACK TO TITLE</button>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

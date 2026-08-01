@@ -8,24 +8,24 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Core Loop
 
-- [ ] **LOOP-01**: Player can start a new run from a title screen and enter the first round.
-- [ ] **LOOP-02**: Player begins every round with exactly ten available clicks shown in the HUD.
-- [ ] **LOOP-03**: Each incorrect primary mouse or touch activation during play consumes exactly
+- [x] **LOOP-01**: Player can start a new run from a title screen and enter the first round.
+- [x] **LOOP-02**: Player begins every round with exactly ten available clicks shown in the HUD.
+- [x] **LOOP-03**: Each incorrect primary mouse or touch activation during play consumes exactly
   one click and produces immediate visual feedback.
-- [ ] **LOOP-04**: Player catches Mitch by activating his visible hit target while at least one
+- [x] **LOOP-04**: Player catches Mitch by activating his visible hit target while at least one
   click remains, including on the tenth attempt.
-- [ ] **LOOP-05**: A successful catch increments completed rounds, resets clicks to ten, and starts
+- [x] **LOOP-05**: A successful catch increments completed rounds, resets clicks to ten, and starts
   a new procedurally generated round after the win sequence.
-- [ ] **LOOP-06**: The tenth incorrect activation locks gameplay input and starts Mitch's escape
+- [x] **LOOP-06**: The tenth incorrect activation locks gameplay input and starts Mitch's escape
   sequence exactly once.
-- [ ] **LOOP-07**: Completed escape displays game-over statistics, local best, and a control that
+- [x] **LOOP-07**: Completed escape displays game-over statistics, local best, and a control that
   starts a clean run at round one.
 - [ ] **LOOP-08**: Manual pause and page invisibility stop simulation, timers, and audio without
   consuming clicks or changing round state.
 
 ### Mitch Target And Difficulty
 
-- [ ] **MITCH-01**: Player can recognize the target as an original caricatured Mitch McConnell
+- [x] **MITCH-01**: Player can recognize the target as an original caricatured Mitch McConnell
   head rigged onto an animated turtle body and shell.
 - [ ] **MITCH-02**: Mitch follows scene-valid routes between hiding spots instead of teleporting.
 - [ ] **MITCH-03**: Foreground props and people can genuinely occlude Mitch and prevent clicks
@@ -37,7 +37,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Living Scene Deck
 
-- [ ] **WORLD-01**: Player can complete a round in an animated Washington street scene.
+- [x] **WORLD-01**: Player can complete a round in an animated Washington street scene.
 - [ ] **WORLD-02**: Player can complete a round in an animated Kentucky county fair scene.
 - [ ] **WORLD-03**: Player can complete a round in an animated airport concourse scene.
 - [ ] **WORLD-04**: Each scene contains a performant crowd whose members walk, stop, queue, chat,
@@ -61,11 +61,11 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Interface And Accessibility
 
-- [ ] **UI-01**: Title screen explains the target, ten-click rule, controls, local-only records,
+- [x] **UI-01**: Title screen explains the target, ten-click rule, controls, local-only records,
   and fictional political-satire/non-affiliation disclaimer before play.
-- [ ] **UI-02**: Gameplay HUD continuously shows current round, clicks remaining, completed rounds,
+- [x] **UI-02**: Gameplay HUD continuously shows current round, clicks remaining, completed rounds,
   and best run without covering the search area.
-- [ ] **UI-03**: The same primary-pointer interaction works with mouse, trackpad, pen, and touch.
+- [x] **UI-03**: The same primary-pointer interaction works with mouse, trackpad, pen, and touch.
 - [ ] **UI-04**: Player can pause/resume, mute/unmute, and restart through labeled controls and
   keyboard shortcuts without accidental stage clicks.
 - [ ] **UI-05**: Title, HUD, stage, cards, and controls remain usable on current desktop viewports
@@ -89,7 +89,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Distribution And Privacy
 
-- [ ] **DIST-01**: Production build emits relative-path `dist/index.html`, `dist/styles.css`, and a
+- [x] **DIST-01**: Production build emits relative-path `dist/index.html`, `dist/styles.css`, and a
   classic IIFE `dist/game.js` with no runtime package, module import, or fetch requirement.
 - [ ] **DIST-02**: Double-clicking `dist/index.html` starts a complete game under `file://` in each
   supported desktop browser without console errors or network requests.
@@ -97,12 +97,12 @@ alive must be funny, fair at first, and immediately satisfying to replay.
   security headers, preview, production, and rollback steps.
 - [ ] **DIST-04**: The same `dist/` folder deploys to S3 with documented index/content types and an
   optional CloudFront HTTPS/security-header configuration.
-- [ ] **DIST-05**: Runtime performs no analytics, telemetry, advertising, tracking, API calls, or
+- [x] **DIST-05**: Runtime performs no analytics, telemetry, advertising, tracking, API calls, or
   personal-data collection.
 
 ### Content And Rights
 
-- [ ] **CONT-01**: Published title screen and credits visibly state that the game is fictional,
+- [x] **CONT-01**: Published title screen and credits visibly state that the game is fictional,
   exaggerated political satire and is unaffiliated with depicted people or institutions.
 - [ ] **CONT-02**: Helicopter, flag, spouse, and money imagery is staged as impossible cartoon
   fiction and never described as evidence or a real event.
@@ -113,7 +113,7 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ### Quality
 
-- [ ] **QUAL-01**: Automated unit tests cover click accounting, tenth-miss loss, last-click catch,
+- [x] **QUAL-01**: Automated unit tests cover click accounting, tenth-miss loss, last-click catch,
   state locks, round reset, seeded RNG, and build output invariants.
 - [ ] **QUAL-02**: Playwright covers successful capture, ten-miss escape, restart, persistence,
   reduced motion, touch input, every scene, and direct-file execution with deterministic seeds.
@@ -157,21 +157,21 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOOP-01 | Phase 1 | Pending |
-| LOOP-02 | Phase 1 | Pending |
-| LOOP-03 | Phase 1 | Pending |
-| LOOP-04 | Phase 1 | Pending |
-| LOOP-05 | Phase 1 | Pending |
-| LOOP-06 | Phase 1 | Pending |
-| LOOP-07 | Phase 1 | Pending |
+| LOOP-01 | Phase 1 | Validated |
+| LOOP-02 | Phase 1 | Validated |
+| LOOP-03 | Phase 1 | Validated |
+| LOOP-04 | Phase 1 | Validated |
+| LOOP-05 | Phase 1 | Validated |
+| LOOP-06 | Phase 1 | Validated |
+| LOOP-07 | Phase 1 | Validated |
 | LOOP-08 | Phase 2 | Pending |
-| MITCH-01 | Phase 1 | Pending |
+| MITCH-01 | Phase 1 | Validated |
 | MITCH-02 | Phase 2 | Pending |
 | MITCH-03 | Phase 2 | Pending |
 | MITCH-04 | Phase 2 | Pending |
 | MITCH-05 | Phase 2 | Pending |
 | MITCH-06 | Phase 2 | Pending |
-| WORLD-01 | Phase 1 | Pending |
+| WORLD-01 | Phase 1 | Validated |
 | WORLD-02 | Phase 4 | Pending |
 | WORLD-03 | Phase 4 | Pending |
 | WORLD-04 | Phase 2 | Pending |
@@ -181,9 +181,9 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | OUT-02 | Phase 3 | Pending |
 | OUT-03 | Phase 3 | Pending |
 | OUT-04 | Phase 3 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
-| UI-03 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Validated |
+| UI-02 | Phase 1 | Validated |
+| UI-03 | Phase 1 | Validated |
 | UI-04 | Phase 3 | Pending |
 | UI-05 | Phase 5 | Pending |
 | UI-06 | Phase 5 | Pending |
@@ -191,16 +191,16 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | AUDIO-02 | Phase 3 | Pending |
 | SAVE-01 | Phase 5 | Pending |
 | SAVE-02 | Phase 5 | Pending |
-| DIST-01 | Phase 1 | Pending |
+| DIST-01 | Phase 1 | Validated |
 | DIST-02 | Phase 5 | Pending |
 | DIST-03 | Phase 5 | Pending |
 | DIST-04 | Phase 5 | Pending |
-| DIST-05 | Phase 1 | Pending |
-| CONT-01 | Phase 1 | Pending |
+| DIST-05 | Phase 1 | Validated |
+| CONT-01 | Phase 1 | Validated |
 | CONT-02 | Phase 3 | Pending |
 | CONT-03 | Phase 3 | Pending |
 | CONT-04 | Phase 3 | Pending |
-| QUAL-01 | Phase 1 | Pending |
+| QUAL-01 | Phase 1 | Validated |
 | QUAL-02 | Phase 5 | Pending |
 | QUAL-03 | Phase 2 | Pending |
 | QUAL-04 | Phase 5 | Pending |

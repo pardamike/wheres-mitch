@@ -1,0 +1,10 @@
+node_modules/
+dist/
+playwright-report/
+test-results/
+docs/
+.planning/
+AGENTS.md
+HANDOFF.md
+README.md
+LICENSE

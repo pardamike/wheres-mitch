@@ -16,11 +16,15 @@ fair at first, and immediately satisfying to replay.
 
 ### Validated
 
-(None yet — ship to validate.)
+- [x] A complete ten-click hidden-object loop with catch, next-round, loss, and restart states
+  (Phase 1 verification).
+- [x] An original Washington street vertical slice with a readable turtle-bodied target, live HUD,
+  title disclaimer, and mouse/touch pointer path (Phase 1 verification).
+- [x] A dependency-free runtime that builds as a classic IIFE and passes direct-`file://` no-network
+  smoke coverage (Phase 1 verification).
 
 ### Active
 
-- [ ] A complete ten-click hidden-object loop with catch, next-round, loss, and restart states.
 - [ ] Three animated, procedurally varied settings populated by convincing crowd behavior.
 - [ ] Turtle Mitch movement and hiding that scales from approachable to absurdly impossible.
 - [ ] Memorable Capitol-return and helicopter-escape outcome animations.
@@ -109,4 +113,4 @@ This document evolves at phase transitions and milestone boundaries.
 3. Decide whether more scenes improve the joke or only add maintenance.
 
 ---
-*Last updated: 2026-07-31 after project planning handoff*
+*Last updated: 2026-07-31 after Phase 1 vertical-slice verification*

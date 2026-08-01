@@ -6,16 +6,16 @@ See `.planning/PROJECT.md` and `HANDOFF.md`.
 
 **Core value:** Finding a constantly moving Turtle Mitch inside a living scene must be funny,
 initially fair, and immediately satisfying to replay.  
-**Current focus:** Phase 1 — Standalone Vertical Slice
+**Current focus:** Phase 2 — Living World And Difficulty
 
 ## Status
 
 - **Milestone:** v1
-- **Phase:** 1 of 5
-- **State:** Execution in progress — Phase 1 toolchain and core loop
+- **Phase:** 2 of 5
+- **State:** Phase 1 shipped and verified; living-world systems in progress
 - **Plans:** 15 prepared across five phases
-- **Implementation commits:** 0
-- **Requirements:** 48 pending, 48 mapped
+- **Implementation commits:** 1
+- **Requirements:** 16 validated, 32 pending, 48 mapped
 
 ## Locked Decisions
 
@@ -28,18 +28,18 @@ initially fair, and immediately satisfying to replay.
 
 ## Session Continuity
 
-**Stopped at:** Execution started 2026-07-31. Canonical documents and Phase 1 contracts were
-read; `planning/` was corrected to `.planning/`; local Git author and GitHub account were verified
-as Mike Parda / pardamike.  
-**Resume from:** Complete the Phase 1 toolchain/core-loop work, then run the full verification
-suite before advancing to the Washington browser slice.  
+**Stopped at:** Phase 1 shipped through the full GSD verify step. `npm run verify` passed with 16
+unit tests, three hosted browser tests, and one direct-file no-network smoke test; the deterministic
+Washington scene received an automated visual review.
+**Resume from:** Execute Phase 2: route network, actor behavior, Mitch pathing/occlusion, difficulty,
+visibility lifecycle, and performance measurement.
 **Blocking gate:** None. Do not deploy; commit/push cohesive verified game milestones directly to
 the `main` branch.
 
 ## Next Action
 
-Execute `.planning/phases/01-standalone-vertical-slice/01-01-PLAN.md`. Keep this diary to concise
+Read and execute the Phase 2 plan set in dependency order. Keep this diary to concise
 milestone/status updates only.
 
 ---
-*Last updated: 2026-07-31 after full planning handoff*
+*Last updated: 2026-07-31 after Phase 1 verification*
