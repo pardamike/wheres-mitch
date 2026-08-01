@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { catchMitch } from './scene-helpers';
 
 interface DebugDeck {
   sceneId: string | null;
@@ -18,7 +19,7 @@ test('normal play consumes a deterministic no-repeat scene deck', async ({ page 
   for (let round = 0; round < 3; round += 1) {
     const debug = await currentDebug(page);
     scenes.push(debug.sceneId ?? '');
-    await page.locator('#mitch-root').click({ force: true });
+    await catchMitch(page);
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
     await expect(page.locator('#outcome-skip')).toBeVisible({ timeout: 3_500 });
     await page.locator('#outcome-skip').click();

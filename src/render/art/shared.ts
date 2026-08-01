@@ -4,7 +4,7 @@ export const INK = '#172033';
 export const PAPER = '#F7F0DE';
 export const NAVY = '#273E68';
 export const TURTLE_GREEN = '#718C51';
-export const SHELL_BROWN = '#765238';
+export const SHELL_GREEN = '#3F7D4D';
 
 export function appendShape<K extends keyof SVGElementTagNameMap>(
   parent: SVGElement,

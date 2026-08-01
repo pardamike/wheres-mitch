@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  catchMitch,
   clickWorldPoint,
   loseRound,
   skipOutcomeTo,
@@ -25,7 +26,7 @@ test.describe('Kentucky county fair', () => {
     await expect(page.locator('#clicks-remaining')).toHaveText('9');
 
     await waitForMitchAt(page, 'peek', hidden.currentSpotId);
-    await page.locator('#mitch-root').click({ force: true });
+    await catchMitch(page);
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
   });
 

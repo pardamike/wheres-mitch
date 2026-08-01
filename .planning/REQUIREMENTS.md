@@ -2,7 +2,7 @@
 
 **Defined:** 2026-07-31  
 **Core Value:** Finding a constantly moving Turtle Mitch inside a scene that feels genuinely
-alive must be funny, fair at first, and immediately satisfying to replay.
+alive must be funny, wickedly evasive from the first round, and immediately satisfying to replay.
 
 ## v1 Requirements
 
@@ -30,7 +30,8 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 - [x] **MITCH-02**: Mitch follows scene-valid routes between hiding spots instead of teleporting.
 - [x] **MITCH-03**: Foreground props and people can genuinely occlude Mitch and prevent clicks
   through visibly opaque objects.
-- [x] **MITCH-04**: Early rounds bound full occlusion and provide findable transit/peek windows.
+- [x] **MITCH-04**: Early rounds favor real occlusion, bound full-hidden intervals, and provide
+  brief but genuine transit/peek windows.
 - [x] **MITCH-05**: Every completed round monotonically increases effective target difficulty;
   late rounds become intentionally faster than practical human tracking.
 - [x] **MITCH-06**: Identical run seed, scene, and round inputs reproduce Mitch's route and timing.
@@ -150,7 +151,9 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | Native mobile app | Responsive browser version is sufficient |
 | User-generated scenes | Large security, tooling, and moderation surface |
 | Service worker/PWA | Adds stale-cache complexity without core value |
-| Photographic or cloned likeness assets | Original caricature is safer and more coherent |
+| Additional photographic or cloned likeness assets | The owner-supplied Mitch cutout is the sole
+  documented exception; more photo assets would dilute the cartoon world and require a new rights
+  record |
 | Copied hidden-object franchise branding | The game must be original satire, not an adaptation |
 
 ## Traceability

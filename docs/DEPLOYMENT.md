@@ -21,13 +21,15 @@ dist/
 ├── index.html
 ├── game.js
 ├── styles.css
+├── assets/
+│   └── mitch-head.png
 ├── favicon.svg
 ├── 404.html
 └── _headers
 ```
 
-Optional future local assets live under relative `./assets/` and are included in the release
-manifest. No release file points outside `dist/`.
+The owner-supplied Mitch head cutout ships under relative `./assets/mitch-head.png` and is included
+in the release manifest. No release file points outside `dist/`.
 
 Artifact rules:
 
@@ -160,6 +162,7 @@ Required metadata:
 | `*.js` | `text/javascript; charset=utf-8` | `public, max-age=300` for fixed filename |
 | `*.css` | `text/css; charset=utf-8` | `public, max-age=300` for fixed filename |
 | `*.svg` | `image/svg+xml` | `public, max-age=86400` |
+| `*.png` | `image/png` | `public, max-age=86400` |
 
 Because v1 uses stable `game.js`/`styles.css` filenames, do not set year-long immutable caching.
 

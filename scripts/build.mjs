@@ -9,6 +9,8 @@ export const productionDirectory = path.join(repositoryRoot, 'dist');
 const publicDirectory = path.join(repositoryRoot, 'public');
 const entryPoint = path.join(repositoryRoot, 'src', 'main.ts');
 const publicFiles = ['index.html', 'styles.css', 'favicon.svg', '404.html', '_headers'];
+const publicAssetFiles = ['assets/mitch-head.png'];
+const publicArtifactFiles = [...publicFiles, ...publicAssetFiles];
 
 export function assertSafeOutputDirectory(candidate) {
   const resolved = path.resolve(candidate);
@@ -19,8 +21,10 @@ export function assertSafeOutputDirectory(candidate) {
 }
 
 async function copyPublicFiles(outputDirectory) {
-  for (const file of publicFiles) {
-    await cp(path.join(publicDirectory, file), path.join(outputDirectory, file));
+  for (const file of publicArtifactFiles) {
+    const outputPath = path.join(outputDirectory, file);
+    await mkdir(path.dirname(outputPath), { recursive: true });
+    await cp(path.join(publicDirectory, file), outputPath);
   }
 }
 
@@ -44,12 +48,22 @@ function assertArtifactIsPortable(fileName, contents) {
   }
 }
 
-async function listArtifactFiles(directory) {
+async function listArtifactFiles(directory, relativeDirectory = '') {
   const entries = await readdir(directory, { withFileTypes: true });
-  return entries
-    .filter((entry) => entry.isFile())
-    .map((entry) => entry.name)
-    .sort();
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const relativePath = path.join(relativeDirectory, entry.name);
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isFile()) {
+        return [relativePath];
+      }
+      if (entry.isDirectory()) {
+        return listArtifactFiles(entryPath, relativePath);
+      }
+      throw new Error(`Build emitted an unsupported artifact entry: ${relativePath}`);
+    }),
+  );
+  return files.flat().sort();
 }
 
 export async function buildArtifact({ outputDirectory = productionDirectory } = {}) {
@@ -77,7 +91,7 @@ export async function buildArtifact({ outputDirectory = productionDirectory } = 
   }
 
   const fileNames = await listArtifactFiles(safeOutputDirectory);
-  const expectedFiles = [...publicFiles, 'game.js'].sort();
+  const expectedFiles = [...publicArtifactFiles, 'game.js'].sort();
   if (fileNames.join('|') !== expectedFiles.join('|')) {
     throw new Error(`Build emitted an unexpected artifact set: ${fileNames.join(', ')}`);
   }

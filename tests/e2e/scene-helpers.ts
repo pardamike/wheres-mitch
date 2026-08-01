@@ -66,6 +66,26 @@ export async function clickWorldPoint(page: Page, point: { x: number; y: number 
   await page.mouse.click(screenPoint.x, screenPoint.y);
 }
 
+export async function catchMitch(
+  page: Page,
+  pointerType: 'mouse' | 'touch' = 'mouse',
+): Promise<void> {
+  await page.locator('#mitch-root [data-joint="hit-target"]').evaluate((target, type) => {
+    target.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        button: 0,
+        buttons: 1,
+        cancelable: true,
+        composed: true,
+        isPrimary: true,
+        pointerId: 1,
+        pointerType: type,
+      }),
+    );
+  }, pointerType);
+}
+
 export async function loseRound(page: Page): Promise<void> {
   const stage = page.locator('#game-stage');
   for (let attempt = 0; attempt < 10; attempt += 1) {

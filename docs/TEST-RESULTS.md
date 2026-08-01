@@ -1,5 +1,32 @@
 # Local Release Verification Results
 
+## Latest: Mitch cutout, hunt-tuning, and viewport-fit pass
+
+**Run date:** 2026-08-01
+
+`npm run verify` passed after integrating the owner-supplied local Mitch cutout, the original
+green/gold retro-arcade shell, the faster/more occlusion-focused opening behavior, and the
+full-viewport-height gameplay shell.
+
+| Check | Result |
+|---|---|
+| TypeScript, ESLint, Prettier | Passed |
+| Vitest | 18 files, 64 tests passed |
+| Production build and artifact verifier | Passed; six root files plus `assets/mitch-head.png` |
+| Chromium suite | 36 hosted/touch/visual/performance tests passed |
+| Chrome + Firefox hosted smoke | Both completed catch, escape, restart, and no-unexpected-request checks |
+| Chrome + Firefox `file://` smoke | Both completed settings, catch, escape, and restart with zero remote requests/errors |
+| Responsive viewport fit | Game shell, footer, and document height remain within each supported landscape viewport |
+
+The artifact verifier confirms the PNG signature and its relative path inside the classic IIFE
+artifact. Hosted request checks allow only the same-origin favicon and this documented local image;
+any other post-load request, including a remote one, fails.
+
+The ignored v1.0.0 ZIP documented below predates this asset update. It was intentionally not
+regenerated because no release/package action was requested.
+
+## Prior Phase 5 release gate
+
 **Run date:** 2026-07-31
 
 **Host:** Apple M3 Pro (arm64), macOS 14.3 (23D56)

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { catchMitch } from './scene-helpers';
 
 async function startSeededRound(page: Page) {
   await page.goto('/?seed=324001&scene=washington&debug=1');
@@ -29,8 +30,12 @@ test.describe('Washington vertical slice', () => {
     await expect(page.locator('#clicks-remaining')).toHaveText('10');
     await expect(page.locator('#completed-rounds')).toHaveText('0');
     await expect(page.locator('#mitch-root')).toBeVisible();
+    await expect(page.locator('#mitch-root [data-asset="mitch-head"]')).toHaveAttribute(
+      'href',
+      './assets/mitch-head.png',
+    );
 
-    await page.locator('#mitch-root').click({ force: true });
+    await catchMitch(page);
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
     await expect(page.locator('#clicks-remaining')).toHaveText('10');
     await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing', {

@@ -360,9 +360,13 @@ export class StageRenderer {
       `translate(${mitch.position.x} ${mitch.position.y + mitchBob}) scale(${MITCH_SCALE})`,
     );
     this.mitchRoot.setAttribute('opacity', outcomeActive ? '0' : '1');
+    // Use the smaller transparent target only while all of Mitch is exposed. Partial peeks
+    // fall back to the painted rig, so foreground scenery still blocks covered art.
     this.mitchRoot.style.pointerEvents =
       state.mode === 'playing' && mitch.clickable ? 'all' : 'none';
-    this.mitchHitTarget.setAttribute('r', String(69 * mitch.profile.hitboxScale));
+    this.mitchHitTarget.style.pointerEvents =
+      state.mode === 'playing' && mitch.clickable && mitch.visibleRatio >= 1 ? 'all' : 'none';
+    this.mitchHitTarget.setAttribute('r', String(59 * mitch.profile.hitboxScale));
 
     if (state.lastMiss && state.lastMiss.id !== this.activeMissId) {
       this.showMiss(state.lastMiss, sceneClockMs);

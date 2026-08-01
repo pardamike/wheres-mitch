@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { catchMitch } from './scene-helpers';
 
 test('records misses and a catch from touch input in mobile landscape', async ({ page }) => {
   await page.goto('/?seed=324001&scene=washington&debug=1');
@@ -8,6 +9,6 @@ test('records misses and a catch from touch input in mobile landscape', async ({
 
   await page.locator('#game-stage').tap({ position: { x: 24, y: 24 } });
   await expect(page.locator('#clicks-remaining')).toHaveText('9');
-  await page.locator('#mitch-root').tap({ force: true });
+  await catchMitch(page, 'touch');
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
 });

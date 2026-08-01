@@ -20,10 +20,13 @@ test('keeps the complete stage and 44px controls usable across release landscape
     const stage = page.locator('#game-stage');
     const stageBox = await stage.boundingBox();
     const footerBox = await page.locator('.game-footer').boundingBox();
+    const gameRootBox = await page.locator('#game-root').boundingBox();
+    const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
     const controls = page.locator('.hud-controls .icon-button');
 
     expect(stageBox).not.toBeNull();
     expect(footerBox).not.toBeNull();
+    expect(gameRootBox).not.toBeNull();
     expect(stageBox?.x).toBeGreaterThanOrEqual(-1);
     expect(stageBox?.y).toBeGreaterThanOrEqual(0);
     expect((stageBox?.x ?? 0) + (stageBox?.width ?? 0)).toBeLessThanOrEqual(viewport.width + 1);
@@ -31,6 +34,11 @@ test('keeps the complete stage and 44px controls usable across release landscape
     expect((stageBox?.width ?? 0) / (stageBox?.height ?? 1)).toBeGreaterThan(1.58);
     expect((stageBox?.width ?? 0) / (stageBox?.height ?? 1)).toBeLessThan(1.62);
     expect(footerBox?.y).toBeGreaterThanOrEqual((stageBox?.y ?? 0) + (stageBox?.height ?? 0));
+    expect((footerBox?.y ?? 0) + (footerBox?.height ?? 0)).toBeLessThanOrEqual(viewport.height + 1);
+    expect((gameRootBox?.y ?? 0) + (gameRootBox?.height ?? 0)).toBeLessThanOrEqual(
+      viewport.height + 1,
+    );
+    expect(pageHeight).toBeLessThanOrEqual(viewport.height + 1);
 
     for (const index of await controls.all()) {
       const controlBox = await index.boundingBox();

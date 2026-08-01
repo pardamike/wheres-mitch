@@ -4,14 +4,14 @@ import { difficultyForRound } from '../../src/core/difficulty';
 describe('canonical difficulty profile', () => {
   it('matches every round-one baseline constant', () => {
     expect(difficultyForRound(0)).toEqual({
-      crowdCount: 48,
-      crowdSpeed: 1,
-      mitchSpeed: 70,
-      routeDecisionMs: 3200,
-      dwellMs: 2100,
-      peekMs: 1200,
-      maxHiddenMs: 2400,
-      hitboxScale: 1.15,
+      crowdCount: 60,
+      crowdSpeed: 1.1,
+      mitchSpeed: 340,
+      routeDecisionMs: 220,
+      dwellMs: 3400,
+      peekMs: 800,
+      maxHiddenMs: 3200,
+      hitboxScale: 0.95,
     });
   });
 
@@ -54,9 +54,9 @@ describe('canonical difficulty profile', () => {
     expect(extreme.crowdSpeed).toBe(1.65);
     expect(extreme.mitchSpeed).toBe(2000);
     expect(extreme.routeDecisionMs).toBe(70);
-    expect(extreme.dwellMs).toBe(70);
+    expect(extreme.dwellMs).toBe(180);
     expect(extreme.peekMs).toBe(60);
-    expect(extreme.maxHiddenMs).toBe(140);
+    expect(extreme.maxHiddenMs).toBe(180);
     expect(extreme.hitboxScale).toBe(0.72);
   });
 });

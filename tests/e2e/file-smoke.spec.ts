@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { expect, test } from '@playwright/test';
+import { catchMitch } from './scene-helpers';
 
 const repositoryRoot = process.cwd();
 const gameFileUrl = pathToFileURL(path.join(repositoryRoot, 'dist', 'index.html')).href;
@@ -40,9 +41,13 @@ test('opens directly from file and completes catch, escape, restart, and setting
   );
   await page.getByRole('button', { name: 'START THE SEARCH' }).click();
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
+  await expect(page.locator('#mitch-root [data-asset="mitch-head"]')).toHaveAttribute(
+    'href',
+    './assets/mitch-head.png',
+  );
   await page.locator('#game-stage').click({ position: { x: 24, y: 24 } });
   await expect(page.locator('#clicks-remaining')).toHaveText('9');
-  await page.locator('#mitch-root').click({ force: true });
+  await catchMitch(page);
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
   await expect(page.locator('#outcome-skip')).toBeVisible({ timeout: 3_000 });
   await page.locator('#outcome-skip').click();

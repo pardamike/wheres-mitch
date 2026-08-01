@@ -1,11 +1,11 @@
 # Where's Mitch? — Execution Handoff
 
-**Updated:** 2026-07-31
+**Updated:** 2026-08-01
 
 **Branch:** `main`
 
-**Status:** All five gameplay phases are implemented. Phase 5 local QA is verified, committed,
-pushed, and packaged locally; no deployment was performed.
+**Status:** All five gameplay phases are implemented. Phase 5 local QA and the owner-supplied Mitch
+cutout, opening-evasion, and viewport-fit update are locally verified; no deployment was performed.
 
 ## Non-negotiables
 
@@ -14,8 +14,8 @@ pushed, and packaged locally; no deployment was performed.
 - Keep the deployable artifact compatible with both HTTP(S) and direct `file://` use.
 - Do not deploy or run Cloudflare, S3, CloudFront, or other cloud commands. The owner explicitly
   limited this run to the game and local packaging/QA.
-- Preserve the visible fictional-satire disclaimer and the original-art rules in `AGENTS.md` and
-  `docs/ART-BIBLE.md`.
+- Preserve the visible fictional-satire disclaimer and the documented asset-rights rules in
+  `AGENTS.md` and `docs/ART-BIBLE.md`.
 - Do not commit generated `dist/`, browser reports, screenshots, caches, or ignored `release/`
   output.
 
@@ -40,6 +40,10 @@ run `npm run verify` before an implementation commit, and push only directly to 
 - Phase 5 adds versioned optional local records/settings, reset confirmation, focus-safe dialogs,
   reduced motion, compact landscape/portrait layout, touch coverage, direct-file QA, artifact
   verification, and local ZIP/checksum packaging.
+- Mitch now uses the owner-supplied local head cutout on an original green/gold retro-arcade shell.
+  Round one starts denser and faster, immediately favors a real occluder, and uses a tighter target.
+- The game shell now fills its usable viewport height without exceeding it; the 16:10 stage scales
+  down before it can push the HUD or footer below the viewport.
 - `dist/` remains generated and ignored. `npm run build` recreates it.
 
 ## Current verification state
@@ -55,6 +59,12 @@ Already passed during this phase:
 experience`) is pushed to `main`, with verification notes in `8a5d76c`. `npm run package` reran the
 gate and created the ignored local `release/wheres-mitch-v1.0.0.zip` plus SHA-256 checksum. The ZIP
 was unpacked and smoke-tested under `file://`; it has not been deployed.
+
+On 2026-08-01, `npm run verify` passed again after the Mitch cutout, hunt-tuning, and viewport-fit
+update: 18 Vitest files / 64 tests, the 36-test Chromium/touch matrix, Chrome/Firefox hosted smoke,
+and Chrome/Firefox direct-file smoke. The checked artifact includes the relative
+`assets/mitch-head.png` file and rejects remote or unexpected requests. The older local ZIP predates
+this asset update and was intentionally not regenerated.
 
 ## Known release-review boundaries
 
@@ -76,6 +86,7 @@ was unpacked and smoke-tested under `file://`; it has not been deployed.
 | Scene deck/variety | `6bdee96` | Fair/airport, seeded variation, no-repeat deck |
 | Release polish | `e26486f` | Local storage, accessibility/responsiveness, artifact/browser QA |
 | Local package | ignored output | `wheres-mitch-v1.0.0.zip`, checksum verified, extracted file smoke passed |
+| Mitch cutout, hunt, and viewport tuning | this commit | Owner-supplied local head, original green/gold shell, dense/fast opening, full-height no-scroll game shell, full local verification |
 
 ## Resume order
 

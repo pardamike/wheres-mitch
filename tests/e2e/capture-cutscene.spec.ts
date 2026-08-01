@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { catchMitch } from './scene-helpers';
 
 interface GameDebug {
   difficulty: { mitchSpeed: number } | null;
@@ -15,11 +16,50 @@ async function startRound(page: Page, reducedMotion = false): Promise<void> {
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
 }
 
-async function waitForCaptureBeat(page: Page, beatId: string): Promise<void> {
-  await page.waitForFunction((expectedBeat) => {
+async function startCaptureBeatHistory(page: Page): Promise<void> {
+  await page.evaluate(() => {
     const root = document.querySelector<HTMLElement>('#game-root');
-    return root?.dataset.outcome === 'capture' && root.dataset.outcomeBeat === expectedBeat;
-  }, beatId);
+    if (!root) {
+      throw new Error('Expected game root for capture beat history.');
+    }
+    const history = new Set<string>();
+    const recordBeat = (beat: string | undefined) => {
+      if (beat) {
+        history.add(beat);
+      }
+    };
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (record.attributeName === 'data-outcome-beat') {
+          recordBeat(record.oldValue ?? undefined);
+        }
+      }
+      recordBeat(root.dataset.outcomeBeat);
+    });
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ['data-outcome-beat'],
+      attributeOldValue: true,
+    });
+    Object.assign(window, {
+      __WHERES_MITCH_CAPTURE_BEAT_HISTORY__: history,
+      __WHERES_MITCH_CAPTURE_BEAT_OBSERVER__: observer,
+    });
+  });
+}
+
+async function captureBeatHistory(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const debugWindow = window as Window & {
+      __WHERES_MITCH_CAPTURE_BEAT_HISTORY__?: Set<string>;
+      __WHERES_MITCH_CAPTURE_BEAT_OBSERVER__?: MutationObserver;
+    };
+    debugWindow.__WHERES_MITCH_CAPTURE_BEAT_OBSERVER__?.disconnect();
+    const history = [...(debugWindow.__WHERES_MITCH_CAPTURE_BEAT_HISTORY__ ?? [])];
+    delete debugWindow.__WHERES_MITCH_CAPTURE_BEAT_HISTORY__;
+    delete debugWindow.__WHERES_MITCH_CAPTURE_BEAT_OBSERVER__;
+    return history;
+  });
 }
 
 async function debug(page: Page): Promise<GameDebug> {
@@ -31,27 +71,24 @@ test('a successful catch plays every Capitol-return beat and advances exactly on
 }) => {
   await startRound(page);
   const firstDifficulty = await debug(page);
-  await page.locator('#mitch-root').click({ force: true });
+  await startCaptureBeatHistory(page);
+  await catchMitch(page);
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
 
-  for (const beatId of [
-    'recognition',
-    'tuck',
-    'dispatch',
-    'travel',
-    'arrival',
-    'stamp',
-    'transition',
-  ]) {
-    await waitForCaptureBeat(page, beatId);
-  }
-  await expect(page.locator('[data-cutscene-kind="capture"]')).toHaveAttribute(
-    'data-cutscene-beat',
-    'transition',
-  );
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing', {
     timeout: 8_000,
   });
+  expect(await captureBeatHistory(page)).toEqual(
+    expect.arrayContaining([
+      'recognition',
+      'tuck',
+      'dispatch',
+      'travel',
+      'arrival',
+      'stamp',
+      'transition',
+    ]),
+  );
   await expect(page.locator('#round-number')).toHaveText('2');
   await expect(page.locator('#completed-rounds')).toHaveText('1');
   await expect(page.locator('#clicks-remaining')).toHaveText('10');
@@ -68,7 +105,7 @@ test('capture Skip appears only after the outcome is established and resolves th
   // which makes this a scheduler race instead of a control test. Full motion leaves the intended
   // one-second semantic Skip window available for real input.
   await startRound(page);
-  await page.locator('#mitch-root').click({ force: true });
+  await catchMitch(page);
   await expect(page.locator('#outcome-skip')).toBeHidden();
   await page.waitForFunction(() => {
     const outcome = (window.__WHERES_MITCH_DEBUG__ as unknown as GameDebug).outcome;

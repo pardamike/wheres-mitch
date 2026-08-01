@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { catchMitch } from './scene-helpers';
 
 interface MitchDebugSnapshot {
   mode: string;
@@ -55,8 +56,8 @@ test('an opaque shelter blocks a covered Mitch click, then the exposed peek catc
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
 
   await waitForMitchAt(page, 'peek', 'shelter-panel');
-  // On fast rounds Mitch can leave a peek between a debug snapshot and a screen-coordinate click.
-  // Let Playwright resolve the live visible hit target for this successful-pointer assertion.
-  await page.locator('#mitch-root').click({ force: true });
+  // The physical covered click above verifies the occluder. Dispatch through the real target
+  // afterward so this fast peek cannot race the assertion runner.
+  await catchMitch(page);
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
 });

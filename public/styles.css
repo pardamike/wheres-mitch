@@ -28,7 +28,10 @@
 
 body {
   min-width: 320px;
+  min-height: 100vh;
   min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   margin: 0;
   padding-top: max(env(safe-area-inset-top), clamp(0.75rem, 2.4vw, 1.5rem));
   padding-right: max(env(safe-area-inset-right), clamp(0.75rem, 2.4vw, 1.5rem));
@@ -70,7 +73,9 @@ a:focus-visible {
 
 #game-root {
   width: min(100%, 1600px);
-  min-height: calc(100dvh - 1.5rem);
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   margin: 0 auto;
   display: grid;
   place-items: center;
@@ -217,7 +222,12 @@ h2 {
 }
 
 .game-shell {
+  display: grid;
   width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .hud {
@@ -287,6 +297,9 @@ h2 {
 
 .stage-frame {
   position: relative;
+  width: min(100%, calc((100dvh - 11rem) * 1.6));
+  align-self: center;
+  justify-self: center;
   overflow: hidden;
   border: 3px solid var(--ink);
   background: var(--paper-deep);
@@ -496,10 +509,6 @@ h2 {
     padding-left: max(env(safe-area-inset-left), 0.5rem);
   }
 
-  #game-root {
-    min-height: calc(100dvh - 1rem);
-  }
-
   .hud {
     min-height: 3.25rem;
     gap: 0.45rem;
@@ -523,16 +532,8 @@ h2 {
 }
 
 @media (max-height: 680px) and (orientation: landscape) {
-  .game-shell {
-    display: grid;
-    height: calc(100dvh - 1rem);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-  }
-
   .stage-frame {
     width: min(100%, calc((100dvh - 9rem) * 1.6));
-    align-self: center;
-    justify-self: center;
   }
 }
 

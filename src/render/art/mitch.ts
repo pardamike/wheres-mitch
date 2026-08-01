@@ -1,5 +1,5 @@
 import { createSvgElement } from '../svg-dom';
-import { appendShape, INK, NAVY, SHELL_BROWN, TURTLE_GREEN } from './shared';
+import { appendShape, INK, NAVY, SHELL_GREEN, TURTLE_GREEN } from './shared';
 
 export interface MitchRigOptions {
   id?: string;
@@ -16,10 +16,7 @@ export interface MitchRig {
   shellFront: SVGGElement;
   neck: SVGEllipseElement;
   head: SVGGElement;
-  faceBase: SVGPathElement;
-  lids: SVGGElement;
-  brows: SVGGElement;
-  mouth: SVGPathElement;
+  headCutout: SVGImageElement;
   collar: SVGPathElement;
   tie: SVGPathElement;
   hitTarget: SVGCircleElement | null;
@@ -70,25 +67,36 @@ export function createMitchRig(options: MitchRigOptions = {}): MitchRig {
     cy: 13,
     rx: 70,
     ry: 48,
-    fill: SHELL_BROWN,
+    fill: SHELL_GREEN,
     stroke: INK,
     'stroke-width': 5,
     'data-joint': 'shell-back',
   });
   appendShape(root, 'path', {
-    d: 'M-47 13H61M-29-24 49 50M49-24-31 50',
-    stroke: '#A77A51',
+    d: 'M7-29 42-9 42 29 7 49-28 29-28-9z',
+    fill: '#6EAE57',
+    stroke: '#235B3A',
+    'stroke-width': 4,
+    'stroke-linejoin': 'round',
+    'data-joint': 'shell-center-scute',
+  });
+  appendShape(root, 'path', {
+    d: 'M-28-9-55 5-55 31-28 29M42-9 66 4 66 28 42 29M-14-34 7-29 28-35M-15 57 7 49 29 56',
+    stroke: '#A7D46D',
     'stroke-width': 4,
     'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
     fill: 'none',
+    opacity: 0.9,
+    'data-joint': 'shell-scute-lines',
   });
   const frontLegs = appendLegPair(root, 'front-legs', 'M53 22 84 43M41 44 61 68');
   const shellFront = appendShape(root, 'path', {
     d: 'M-49-18q55-40 115 6v52q-54 36-115 0z',
     fill: 'none',
-    stroke: '#C69A6A',
-    'stroke-width': 3,
-    opacity: 0.75,
+    stroke: '#E2C66F',
+    'stroke-width': 6,
+    opacity: 0.9,
     'data-joint': 'shell-front',
   });
   const neck = appendShape(root, 'ellipse', {
@@ -101,79 +109,6 @@ export function createMitchRig(options: MitchRigOptions = {}): MitchRig {
     'stroke-width': 4,
     'data-joint': 'neck',
   });
-  const head = createSvgElement('g', { 'data-joint': 'head' });
-  const faceBase = appendShape(head, 'path', {
-    d: 'M-84 3q-9-63 37-67 42 5 33 59l-15 27-42-1z',
-    fill: '#F1C6A4',
-    stroke: INK,
-    'stroke-width': 4,
-    'data-joint': 'face-base',
-  });
-  appendShape(head, 'path', {
-    d: 'M-92-43q24-30 58-5l-6 17-51-1z',
-    fill: '#E4D1BB',
-    stroke: INK,
-    'stroke-width': 3,
-    'data-joint': 'hair',
-  });
-  appendShape(head, 'circle', {
-    cx: -85,
-    cy: -1,
-    r: 4,
-    fill: '#D99D76',
-    stroke: INK,
-    'stroke-width': 1.5,
-    'data-joint': 'ear',
-  });
-  appendShape(head, 'path', {
-    d: 'M-75-28h12M-46-28h12',
-    stroke: INK,
-    'stroke-width': 3,
-    'stroke-linecap': 'round',
-    'data-joint': 'eyes',
-  });
-  const lids = createSvgElement('g', { 'data-joint': 'lids' });
-  appendShape(lids, 'path', {
-    d: 'M-76-31h13M-47-31h13',
-    stroke: '#E6B892',
-    'stroke-width': 4,
-    'stroke-linecap': 'round',
-  });
-  head.append(lids);
-  const brows = createSvgElement('g', { 'data-joint': 'brows' });
-  appendShape(brows, 'path', {
-    d: 'M-78-39h17M-49-39h17',
-    stroke: '#7B5B45',
-    'stroke-width': 3.5,
-    'stroke-linecap': 'round',
-  });
-  head.append(brows);
-  appendShape(head, 'path', {
-    d: 'M-58-27l-4 17 8 1',
-    stroke: '#C58B6B',
-    'stroke-width': 2.5,
-    fill: 'none',
-    'stroke-linecap': 'round',
-    'data-joint': 'nose',
-  });
-  const mouth = appendShape(head, 'path', {
-    d: 'M-69-11q9 7 19 0',
-    fill: 'none',
-    stroke: '#A3443B',
-    'stroke-width': 3,
-    'stroke-linecap': 'round',
-    'data-joint': 'mouth',
-  });
-  appendShape(head, 'path', {
-    d: 'M-77 0q9 6 23 5',
-    fill: 'none',
-    stroke: '#D09372',
-    'stroke-width': 2,
-    'stroke-linecap': 'round',
-    opacity: 0.8,
-    'data-joint': 'expression-lines',
-  });
-  root.append(head);
   const collar = appendShape(root, 'path', {
     d: 'M-42-7 3 1-15 34-53 12z',
     fill: NAVY,
@@ -188,12 +123,25 @@ export function createMitchRig(options: MitchRigOptions = {}): MitchRig {
     'stroke-width': 2,
     'data-joint': 'tie',
   });
+  const head = createSvgElement('g', { 'data-joint': 'head' });
+  const headCutout = createSvgElement('image', {
+    href: './assets/mitch-head.png',
+    x: -128,
+    y: -102,
+    width: 120,
+    height: 158,
+    preserveAspectRatio: 'xMidYMid meet',
+    'data-asset': 'mitch-head',
+    'data-joint': 'head-cutout',
+  });
+  head.append(headCutout);
+  root.append(head);
   let hitTarget: SVGCircleElement | null = null;
   if (options.interactive) {
     hitTarget = appendShape(root, 'circle', {
-      cx: -42,
-      cy: -15,
-      r: 69,
+      cx: -67,
+      cy: -19,
+      r: 59,
       fill: '#FFFFFF',
       'fill-opacity': 0,
       stroke: 'none',
@@ -213,10 +161,7 @@ export function createMitchRig(options: MitchRigOptions = {}): MitchRig {
     shellFront,
     neck,
     head,
-    faceBase,
-    lids,
-    brows,
-    mouth,
+    headCutout,
     collar,
     tie,
     hitTarget,

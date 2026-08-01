@@ -31,13 +31,13 @@ describe('shipped asset manifest', () => {
     const audioFiles = optionalFilesUnder(path.join(repositoryRoot, 'src/audio')).filter(
       (filePath) => filePath.endsWith('.ts'),
     );
-    const publicSvgFiles = filesUnder(path.join(repositoryRoot, 'public')).filter((filePath) =>
-      filePath.endsWith('.svg'),
+    const publicAssetFiles = filesUnder(path.join(repositoryRoot, 'public')).filter((filePath) =>
+      /\.(?:svg|png|webp|jpe?g)$/i.test(filePath),
     );
     const requiredPaths = [
       ...artFiles,
       ...audioFiles,
-      ...publicSvgFiles,
+      ...publicAssetFiles,
       path.join(repositoryRoot, 'src/render/stage-renderer.ts'),
     ].map(relative);
 

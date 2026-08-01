@@ -5,11 +5,12 @@ import { productionDirectory } from './build.mjs';
 const expectedFiles = [
   '404.html',
   '_headers',
+  'assets/mitch-head.png',
   'favicon.svg',
   'game.js',
   'index.html',
   'styles.css',
-];
+].sort();
 const textFiles = ['404.html', 'favicon.svg', 'game.js', 'index.html', 'styles.css'];
 
 function fail(message) {
@@ -42,12 +43,22 @@ function assertNoForbiddenRuntimePattern(fileName, contents) {
   }
 }
 
-async function artifactFileNames() {
-  const entries = await readdir(productionDirectory, { withFileTypes: true });
-  if (entries.some((entry) => !entry.isFile())) {
-    fail('dist must contain only the documented root-level files.');
-  }
-  return entries.map((entry) => entry.name).sort();
+async function artifactFileNames(directory = productionDirectory, relativeDirectory = '') {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const relativePath = path.join(relativeDirectory, entry.name);
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isFile()) {
+        return [relativePath];
+      }
+      if (entry.isDirectory()) {
+        return artifactFileNames(entryPath, relativePath);
+      }
+      fail(`dist contains an unsupported entry: ${relativePath}.`);
+    }),
+  );
+  return files.flat().sort();
 }
 
 async function main() {
@@ -76,8 +87,19 @@ async function main() {
   if (!html.includes('href="./favicon.svg"')) {
     fail('index.html must reference the favicon relatively.');
   }
+  if (!script?.includes('./assets/mitch-head.png')) {
+    fail('game.js must reference the local Mitch head cutout relatively.');
+  }
   if (!script?.includes('(() => {')) {
     fail('game.js is not the expected classic IIFE bundle.');
+  }
+  const headCutout = await readFile(path.join(productionDirectory, 'assets/mitch-head.png'));
+  const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  if (
+    headCutout.length === 0 ||
+    !headCutout.subarray(0, pngSignature.length).equals(pngSignature)
+  ) {
+    fail('assets/mitch-head.png is missing or is not a PNG.');
   }
 
   console.log(`Verified portable static artifact: ${fileNames.join(', ')}`);

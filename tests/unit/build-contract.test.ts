@@ -21,10 +21,11 @@ describe('static build contract', () => {
     runBuild();
   });
 
-  it('emits only the portable static entry files', () => {
+  it('emits the documented portable static artifact', () => {
     expect(existsSync(path.join(distDirectory, 'index.html'))).toBe(true);
     expect(existsSync(path.join(distDirectory, 'styles.css'))).toBe(true);
     expect(existsSync(path.join(distDirectory, 'game.js'))).toBe(true);
+    expect(existsSync(path.join(distDirectory, 'assets', 'mitch-head.png'))).toBe(true);
 
     const html = readFileSync(path.join(distDirectory, 'index.html'), 'utf8');
     const script = readFileSync(path.join(distDirectory, 'game.js'), 'utf8');
@@ -39,6 +40,7 @@ describe('static build contract', () => {
     expect(runtimeArtifact).not.toMatch(/https?:\/\//i);
     expect(script).not.toMatch(/\bimport\s*\(|^\s*import\s/m);
     expect(script).not.toMatch(/\brequire\s*\(/);
+    expect(script).toContain('./assets/mitch-head.png');
   });
 
   it('refuses a build target outside the exact dist directory', () => {

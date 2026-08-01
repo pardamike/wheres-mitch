@@ -9,8 +9,10 @@ The game looks like an original American editorial cartoon expanded into a dense
 book. Geometry is clean enough for small-screen readability but imperfect enough to feel drawn.
 Characters have expressive silhouettes, oversize heads/hands, flat fills, and dark ink contours.
 
-The result must not be photorealistic and must not mimic Where's Waldo composition, lettering,
-linework, striped target styling, or character language.
+The cartoon world, shell, crowd, and effects must not be photorealistic and must not mimic Where's
+Waldo composition, lettering, linework, striped target styling, or character language. The
+owner-supplied Mitch head cutout is the single documented photographic exception; it is always
+grafted onto an impossible cartoon turtle so the result reads as satire, not reportage.
 
 ## 2. Drawing Rules
 
@@ -29,8 +31,8 @@ linework, striped target styling, or character language.
 ## 3. Originality And Rights Rules
 
 - Draw every final vector specifically for this project.
-- Do not trace photographs. Reference public appearances only to understand general recognizable
-  features, then produce original simplified geometry.
+- Do not trace photographs or source additional photo assets. The owner-supplied local Mitch head
+  cutout is the sole approved photographic exception and must remain recorded in the manifest.
 - Do not import political logos, campaign marks, news graphics, or copyrighted cartoons.
 - The Capitol, generic flags, vehicles, buildings, and public symbols must be independently drawn.
 - The Chinese flag may be reproduced accurately as a national flag; do not copy a branded
@@ -45,14 +47,12 @@ linework, striped target styling, or character language.
 
 ### Readable Identity
 
-Use restrained public-figure caricature cues:
+Use the approved local cutout with restrained supporting caricature cues:
 
-- Large rounded head and pronounced lower face
-- Light swept-back hair shape
-- Heavy-lidded eyes and expressive brow
-- Small rimless/understated glasses only if they improve recognition in review
+- Owner-supplied Mitch head PNG with its prepared right-side neck edge
 - Suit collar and compact tie emerging at shell/neck junction
-- Expressions based on comic situation: cautious, startled, smug, determined
+- Glossy green segmented shell with a warm gold rim; it may nod broadly to retro arcade turtles,
+  but must remain a project-original silhouette and pattern rather than a branded game character.
 
 Do not exaggerate medical, mobility, age-related, or disability traits.
 
@@ -68,15 +68,7 @@ mitch-root
 ├── shell-front
 ├── neck
 ├── head
-│   ├── face-base
-│   ├── hair
-│   ├── ears
-│   ├── eyes
-│   ├── lids
-│   ├── brows
-│   ├── nose
-│   ├── mouth
-│   └── expression-lines
+│   └── head-cutout (local `mitch-head.png`)
 ├── collar
 ├── tie
 └── hit-target
@@ -86,18 +78,18 @@ mitch-root
 
 - Neutral extended walk
 - Cautious peek left/right
-- Slow blink
-- Startled catch
-- Smug pre-escape glance
+- Brief cutout peek
+- Startled catch tuck
+- Pre-escape cutout hold
 - Full shell tuck
 - Rapid scuttle cycle
 - Hanging shell/load pose for helicopter sequence
 
 ### Animation
 
-- Walk cycle: opposing leg pairs, slight shell counter-rotation, minimal head bob.
-- Peek: neck extension first, then head rotation and blink.
-- Tuck: face compresses slightly, neck retracts, limbs fold, shell closes.
+- Walk cycle: opposing leg pairs, slight shell counter-rotation, minimal cutout bob.
+- Peek: neck extension first, then a brief cutout reveal.
+- Tuck: the cutout/neck retract and fade while limbs fold and the shell closes.
 - High speed: shorten gait loop until a tasteful “wheel legs” smear at absurd rounds.
 - Hit region is a separate transparent authored shape, not inferred from a bounding rectangle.
 
@@ -315,7 +307,8 @@ Effects use pooled SVG groups and transform/opacity animation only.
 ## 14. SVG Authoring Rules
 
 - Give every reusable rig group a stable semantic ID/class, not editor-generated names.
-- Remove editor metadata, embedded rasters, hidden layers, and unused definitions.
+- Remove editor metadata, embedded rasters, hidden layers, and unused definitions. The local
+  owner-supplied Mitch PNG is the one external raster reference permitted by this project.
 - Convert only decorative lettering to paths; retain UI text as real HTML.
 - Keep each scene's static SVG/model construction separate from actor instances.
 - Never attach gameplay state directly to arbitrary SVG path objects.
@@ -326,13 +319,15 @@ Effects use pooled SVG groups and transform/opacity animation only.
 
 ## 15. Asset Manifest
 
-Every shipped visual or procedural audio source must appear here. All listed art is drawn as
-project-specific vector code: no traced photographs, copied cartoon artwork, stock illustration,
-recorded audio, remote source, or embedded raster is shipped.
+Every shipped visual or procedural audio source must appear here. Apart from the documented local
+owner-supplied Mitch PNG, all listed art is project-specific vector code: no traced photographs,
+copied cartoon artwork, stock illustration, recorded audio, remote source, or embedded raster is
+shipped.
 
 | Asset family | Author/source | Owning source path | License | Attribution | Modification | Status |
 |---|---|---|---|---|---|---|
-| Turtle Mitch rig | Project-original inline SVG | `src/render/art/mitch.ts` | MIT project asset | None | Original vector anatomy and pose joints | Shipped |
+| Turtle Mitch rig | Project-original inline SVG | `src/render/art/mitch.ts` | MIT project asset | None | Original turtle anatomy, pose joints, and green segmented arcade-shell treatment | Shipped |
+| Mitch head cutout | Owner-supplied `Pi7_cropper.png` (2026-08-01) | `public/assets/mitch-head.png` | Owner-authorized project use | None | Unmodified RGBA PNG, placed as a local SVG image layer | Shipped |
 | Elaine cockpit rig | Project-original inline SVG | `src/render/art/elaine.ts` | MIT project asset | None | Original respectful simplified bust | Shipped |
 | Cartoon helicopter and PRC flag motif | Project-original inline SVG; national-flag colors/motif | `src/render/art/helicopter.ts` | MIT project asset / public national flag depiction | None | Original toy-like vehicle and hand-authored star paths | Shipped |
 | Money-bag variants | Project-original inline SVG | `src/render/art/money.ts` | MIT project asset | None | Original bags, satchel, and generic dollar marks | Shipped |
@@ -353,7 +348,7 @@ recorded audio, remote source, or embedded raster is shipped.
 
 Before Phase 3 is considered complete, human review must approve:
 
-- Mitch is recognizable and funny without copying a photograph or mocking health/disability.
+- Mitch's owner-approved cutout is recognizable and funny without mocking health/disability.
 - Turtle anatomy reads clearly at minimum size and supports tuck/scuttle animation.
 - Elaine Chao is recognizable enough for the intended gag and free of ethnic stereotype.
 - Helicopter is unmistakably cartoon fiction and the Chinese flag is accurate/visible.

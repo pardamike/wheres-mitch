@@ -18,10 +18,13 @@ export interface MitchRuntime {
   fullyHiddenElapsedMs: number;
   clickable: boolean;
   visibleRatio: number;
+  openingRetreatComplete: boolean;
   profile: DifficultyProfile;
   rng: SeededRng;
   trace: string[];
 }
+
+const HIDDEN_SPOT_WEIGHT_MULTIPLIER = 2.5;
 
 function spotById(definition: SceneDefinition, id: string): SceneHideSpot {
   const spot = definition.hideSpots.find((candidate) => candidate.id === id);
@@ -31,17 +34,27 @@ function spotById(definition: SceneDefinition, id: string): SceneHideSpot {
   return spot;
 }
 
-function chooseSpot(mitch: MitchRuntime, definition: SceneDefinition): SceneHideSpot {
+function chooseSpot(
+  mitch: MitchRuntime,
+  definition: SceneDefinition,
+  prioritizeOcclusion: boolean,
+): SceneHideSpot {
   const candidates = definition.hideSpots.filter(
     (spot) =>
       spot.id !== mitch.currentSpotId &&
       definition.routeNetwork.isReachable(mitch.currentNodeId, spot.approachNodeId),
   );
-  const available = candidates.length > 0 ? candidates : definition.hideSpots;
-  const totalWeight = available.reduce((total, spot) => total + spot.weight, 0);
+  const reachableCandidates = candidates.length > 0 ? candidates : definition.hideSpots;
+  const hiddenCandidates = reachableCandidates.filter((spot) => spot.occluderId);
+  const available =
+    prioritizeOcclusion && hiddenCandidates.length > 0 ? hiddenCandidates : reachableCandidates;
+  const totalWeight = available.reduce(
+    (total, spot) => total + spot.weight * (spot.occluderId ? HIDDEN_SPOT_WEIGHT_MULTIPLIER : 1),
+    0,
+  );
   let choice = mitch.rng.next() * totalWeight;
   for (const spot of available) {
-    choice -= spot.weight;
+    choice -= spot.weight * (spot.occluderId ? HIDDEN_SPOT_WEIGHT_MULTIPLIER : 1);
     if (choice <= 0) {
       return spot;
     }
@@ -50,7 +63,8 @@ function chooseSpot(mitch: MitchRuntime, definition: SceneDefinition): SceneHide
 }
 
 function beginTransit(mitch: MitchRuntime, definition: SceneDefinition): void {
-  const destination = chooseSpot(mitch, definition);
+  const destination = chooseSpot(mitch, definition, !mitch.openingRetreatComplete);
+  mitch.openingRetreatComplete = true;
   mitch.destinationSpotId = destination.id;
   mitch.route = definition.routeNetwork.findPath(mitch.currentNodeId, destination.approachNodeId);
   mitch.routeCursor = 1;
@@ -166,10 +180,11 @@ export function createMitch(
     currentSpotId: initialSpot.id,
     destinationSpotId: null,
     phaseElapsedMs: 0,
-    phaseDurationMs: Math.max(2400, profile.peekMs),
+    phaseDurationMs: Math.min(600, profile.peekMs),
     fullyHiddenElapsedMs: 0,
     clickable: true,
     visibleRatio: Math.max(0.65, initialSpot.revealRatio),
+    openingRetreatComplete: false,
     profile,
     rng: createRng(seed),
     trace: [`peek:${initialSpot.id}`],

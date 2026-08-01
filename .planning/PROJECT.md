@@ -10,7 +10,7 @@ for anyone who wants a funny two-minute distraction, not a news product or factu
 ## Core Value
 
 Finding a constantly moving Turtle Mitch inside a scene that feels genuinely alive must be funny,
-fair at first, and immediately satisfying to replay.
+wickedly evasive from the first round, and immediately satisfying to replay.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ fair at first, and immediately satisfying to replay.
   smoke coverage (Phase 1 verification).
 - [x] A deterministic Washington crowd with authored routes, six behavior families, layered
   occlusion, and a reproducible Turtle Mitch route/hide loop (Phase 2 verification).
-- [x] Formula-driven difficulty from a readable opening through an intentionally absurd late game,
+- [x] Formula-driven difficulty from a wicked opening through an intentionally absurd late game,
   plus true pause/visibility suspension (Phase 2 verification).
 - [x] A measured 96-actor SVG performance profile with stable DOM counts at desktop and compact
   landscape sizes (Phase 2 verification; see `docs/PERFORMANCE.md`).
@@ -49,7 +49,8 @@ fair at first, and immediately satisfying to replay.
 - A mobile native app or app-store package — responsive browser play is sufficient.
 - A level editor, mod system, or user-generated content — not needed for the joke or core loop.
 - A PWA/service worker — offline `file://` support is simpler and avoids cache/version complexity.
-- Photorealism, copied photographs, sampled political speeches, or copied Where's Waldo artwork.
+- Additional photorealism, unapproved photographs, sampled political speeches, or copied Where's
+  Waldo artwork. The owner-supplied Mitch head cutout is the one documented exception.
 - Claims that any depicted escape, payment, foreign relationship, or misconduct occurred in fact.
 
 ## Context
@@ -75,7 +76,8 @@ fair at first, and immediately satisfying to replay.
 - **Runtime**: Static HTML, CSS, and classic JavaScript bundle only — no backend or network need.
 - **Architecture**: Vanilla strict TypeScript source, esbuild IIFE output, inline SVG stage, DOM HUD.
 - **Offline**: The release must open directly with `file://`; no runtime ESM, `fetch`, or imports.
-- **Assets**: Original local/inline vectors and synthesized/original sound only.
+- **Assets**: Original local/inline vectors and synthesized/original sound, plus the documented
+  owner-supplied local Mitch head cutout only.
 - **Compatibility**: Current Chrome, Edge, Firefox, and Safari; desktop-first plus mobile landscape.
 - **Performance**: Target 60 FPS desktop and 30 FPS supported mobile with 96 active crowd actors.
 - **Persistence**: Hosted `localStorage` is supported; direct-file persistence is best effort with

@@ -75,7 +75,9 @@ No dependency may be added to solve a task that is straightforward with the plat
 │   ├── styles.css
 │   ├── favicon.svg
 │   ├── 404.html
-│   └── _headers
+│   ├── _headers
+│   └── assets/
+│       └── mitch-head.png
 ├── src/
 │   ├── main.ts
 │   ├── core/
@@ -141,7 +143,8 @@ create this tree incrementally; later-scene, audio, storage, and release files a
    - no external dependencies
    - development sourcemap only
    - production minification only
-4. Copy `public/index.html`, `styles.css`, `favicon.svg`, `404.html`, and `_headers` unchanged.
+4. Copy `public/index.html`, `styles.css`, `favicon.svg`, `404.html`, `_headers`, and the local
+   `assets/mitch-head.png` unchanged.
 5. Scan generated HTML/CSS/JS for absolute-root URLs, `type="module"`, remote URLs, dynamic
    imports, and source references outside `dist/`; fail if found.
 6. Emit a build summary containing file names and byte sizes.
@@ -329,8 +332,8 @@ when a manually paused page returns, it remains paused.
 6. `effects-layer`
 7. `cutscene-layer`
 
-Actors are SVG `<g>` elements. Movement updates one group transform. Limb/face idle details use CSS
-classes or child transforms. Static geometry is constructed once per round.
+Actors are SVG `<g>` elements. Movement updates one group transform. Limb/cutout idle details use
+CSS classes or child transforms. Static geometry is constructed once per round.
 
 ### Depth And Occlusion
 

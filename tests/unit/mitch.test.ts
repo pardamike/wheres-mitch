@@ -46,12 +46,13 @@ describe('Turtle Mitch routing and fairness', () => {
     expect(maximumHiddenElapsed).toBeLessThanOrEqual(profile.maxHiddenMs);
   });
 
-  it('keeps the opening readable and leaves zero-delta pause frames unchanged', () => {
+  it('makes a brief opening retreat to a real occluder and leaves zero-delta pause frames unchanged', () => {
     const definition = getWashingtonDefinition();
     const profile = difficultyForRound(0);
     const mitch = createMitch(definition, 324001, profile);
 
-    updateMitch(mitch, definition, 2399);
+    const openingPeekMs = Math.min(600, profile.peekMs);
+    updateMitch(mitch, definition, openingPeekMs - 1);
     expect(mitch.mode).toBe('peek');
     expect(mitch.clickable).toBe(true);
     const before = mitchSnapshot(mitch);
@@ -61,5 +62,10 @@ describe('Turtle Mitch routing and fairness', () => {
     updateMitch(mitch, definition, 1);
     expect(mitch.mode).toBe('deciding');
     expect(mitch.clickable).toBe(true);
+
+    updateMitch(mitch, definition, profile.routeDecisionMs);
+    expect(mitch.mode).toBe('transit');
+    const destination = definition.hideSpots.find((spot) => spot.id === mitch.destinationSpotId);
+    expect(destination?.occluderId).toBeTruthy();
   });
 });

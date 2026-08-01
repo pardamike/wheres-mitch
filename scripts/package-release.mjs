@@ -68,17 +68,23 @@ async function normalizeTimestamps(directory) {
   }
 }
 
-async function artifactSummary(directory) {
-  const names = await readdir(directory);
+async function artifactSummary(directory, relativeDirectory = '') {
+  const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
-  for (const name of names.sort()) {
-    const details = await stat(path.join(directory, name));
-    if (!details.isFile()) {
-      throw new Error(`Release artifact contains an unexpected directory: ${name}`);
+  for (const entry of entries.sort((first, second) => first.name.localeCompare(second.name))) {
+    const relativePath = path.join(relativeDirectory, entry.name);
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await artifactSummary(entryPath, relativePath)));
+      continue;
     }
-    files.push({ name, size: details.size });
+    if (!entry.isFile()) {
+      throw new Error(`Release artifact contains an unsupported entry: ${relativePath}`);
+    }
+    const details = await stat(entryPath);
+    files.push({ name: relativePath, size: details.size });
   }
-  return files;
+  return files.sort((first, second) => first.name.localeCompare(second.name));
 }
 
 async function main() {

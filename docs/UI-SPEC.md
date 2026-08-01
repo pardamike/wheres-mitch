@@ -47,7 +47,7 @@ controls are obvious, and no modal or chrome competes with the search area durin
 | Element | Primary | Secondary |
 |---------|---------|-----------|
 | Turtle body | `#718C51` | `#A9BE77` |
-| Turtle shell | `#765238` | `#9B744D` |
+| Turtle shell | `#3F7D4D` | `#E2C66F` |
 | Mitch suit/tie detail | `#273E68` | `#C94A43` |
 | Helicopter fuselage | `#B82025` | `#77171B` |
 | Chinese flag | `#DE2910` | stars `#FFDE00` |
@@ -259,6 +259,8 @@ Pause overlay:
 
 - Use `100dvh` with fallback to `100vh`.
 - Account for `env(safe-area-inset-*)` on notched mobile devices.
+- The gameplay shell fills its available viewport height without exceeding it; the centered stage
+  scales down before it can push the HUD or footer below the viewport.
 - Continue Anyway in portrait letterboxes the complete stage; it never crops hiding areas.
 - No breakpoint changes world coordinates or target location.
 - Full disclaimer remains reachable by normal page scrolling when the viewport cannot fit it.

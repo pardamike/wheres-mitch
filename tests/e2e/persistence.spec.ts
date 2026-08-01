@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loseRound, skipOutcomeTo } from './scene-helpers';
+import { catchMitch, loseRound, skipOutcomeTo } from './scene-helpers';
 
 const recordsStorageKey = 'wheres-mitch:records:v1';
 
@@ -10,7 +10,7 @@ async function startSeededRound(page: Page): Promise<void> {
 }
 
 async function completeCatch(page: Page): Promise<void> {
-  await page.locator('#mitch-root').click({ force: true });
+  await catchMitch(page);
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'player_capture');
   await page.waitForFunction(
     () => {
@@ -21,9 +21,11 @@ async function completeCatch(page: Page): Promise<void> {
     undefined,
     { timeout: 3_000, polling: 'raf' },
   );
-  if ((await page.locator('#game-root').getAttribute('data-mode')) === 'player_capture') {
-    await page.locator('#outcome-skip').click();
-  }
+  await page.evaluate(() => {
+    if (document.querySelector('#game-root')?.getAttribute('data-mode') === 'player_capture') {
+      document.querySelector<HTMLButtonElement>('#outcome-skip')?.click();
+    }
+  });
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing', {
     timeout: 3_000,
   });

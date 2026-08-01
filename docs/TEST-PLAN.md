@@ -120,6 +120,8 @@ Recommended canonical fixtures:
 - `game.js` has no unresolved `import(`, top-level `import`, `require(`, remote URL, or source path.
 - CSS and HTML contain no root-absolute asset path.
 - `dist/` contains every required static file and no source/test file.
+- The local Mitch head cutout is emitted as `dist/assets/mitch-head.png`, has PNG bytes, and is
+  referenced only through a relative local path.
 - Production build succeeds from a clean checkout after `npm ci`.
 
 ## 6. Playwright E2E Matrix
@@ -178,11 +180,14 @@ At least one capture test uses a real pointer coordinate without debug `catchMit
 ### Responsive And Input
 
 - Desktop 1440×1000, laptop 1024×768, compact landscape 844×390, and minimum 667×375.
-- HUD does not overlap stage, controls are visible, and stage viewBox is uncropped.
+- HUD does not overlap stage, controls are visible, stage viewBox is uncropped, and the gameplay
+  shell/footer do not exceed viewport height or create landscape-page scrolling.
 - Touchscreen context uses pointer input to record miss and catch.
 - Portrait shows rotate prompt; Continue Anyway preserves whole stage.
 - Keyboard shortcuts pause/mute/restart without consuming attempts.
 - HUD control clicks never decrement attempts.
+- Hosted no-request checks allow only the documented same-origin favicon and local Mitch head PNG;
+  any other post-load request, especially a remote one, fails the test.
 
 ### Reduced Motion
 
@@ -201,7 +206,7 @@ Required assertions:
 - Title renders and Start works.
 - Washington catch advances a round.
 - Ten misses reach game over.
-- Styles, SVG, script, and favicon load without CORS/module errors.
+- Styles, SVG, script, favicon, and local Mitch head cutout load without CORS/module errors.
 - Capture all `console.error`, `pageerror`, and failed request events; expected count is zero.
 - Abort on any `http:`, `https:`, WebSocket, beacon, or fetch request.
 - Storage behavior may be available or memory fallback; both are accepted.

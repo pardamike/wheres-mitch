@@ -16,7 +16,7 @@ The comedy comes from three things working together:
    busy world.
 2. Environments whose people appear to have errands, relationships, and reactions rather than
    behaving like decorative particles.
-3. Difficulty that begins as a fair visual search and eventually becomes hilariously impossible.
+3. Difficulty that begins wickedly evasive and eventually becomes hilariously impossible.
 
 ## 2. Player Promise
 
@@ -32,8 +32,8 @@ number of rounds from the previous run.
 - Tone: absurd, mischievous, editorial-cartoon satire.
 - The joke targets public political imagery and the fictional situation, not age, disability,
   nationality, ethnicity, or private family members.
-- Mitch McConnell and Elaine Chao are depicted as recognizable public-figure caricatures without
-  photorealistic copying or ethnic stereotype.
+- Mitch McConnell appears as an owner-supplied head cutout on an impossible cartoon turtle, while
+  Elaine Chao remains an original recognizable caricature free of ethnic stereotype.
 - The Chinese flag is a conspicuous prop on a physically impossible cartoon escape vehicle. The
   game never claims the vehicle, cash, conduct, or event is real.
 - No text asserts that Mitch is currently absent, ill, corrupt, controlled by a foreign power, or
@@ -138,27 +138,28 @@ Initial tuning constants:
 
 | Parameter | Formula | Purpose |
 |-----------|---------|---------|
-| Crowd count | `min(48 + 4 * i, 96)` | Adds visual density until the performance ceiling |
-| Crowd speed multiplier | `min(1 + 0.035 * i, 1.65)` | Keeps ambient life lively but legible |
-| Mitch transit speed | `min(2000, 70 * 1.12^i)` SVG units/sec | Produces the eventually impossible chase |
-| Route-decision interval | `max(70, 3200 * 0.87^i)` ms | Increases hiding-place churn |
-| Hiding dwell | `max(70, 2100 * 0.89^i)` ms | Shortens stationary inspection windows |
-| Peek duration | `max(60, 1200 * 0.90^i)` ms | Reduces recognizable target exposure |
-| Maximum full occlusion | `max(140, 2400 * 0.92^i)` ms | Prevents unfair early disappearance |
-| Target hitbox scale | `max(0.72, 1.15 * 0.975^i)` | Generous early hit target, smaller late target |
+| Crowd count | `min(60 + 3 * i, 96)` | Starts dense and reaches the performance ceiling quickly |
+| Crowd speed multiplier | `min(1.1 + 0.04 * i, 1.65)` | Makes the opening crowd a meaningful visual screen |
+| Mitch transit speed | `min(2000, 340 * 1.09^i)` SVG units/sec | Makes Turtle Mitch fast from round one, then absurd |
+| Route-decision interval | `max(70, 220 * 0.90^i)` ms | Keeps his hiding-place churn brisk from the opening |
+| Hiding dwell | `max(180, 3400 * 0.91^i)` ms | Gives opaque hiding spots real cover time |
+| Peek duration | `max(60, 800 * 0.90^i)` ms | Keeps recognizable target exposure short |
+| Maximum full occlusion | `max(180, 3200 * 0.93^i)` ms | Allows a sustained but bounded opening hide |
+| Target hitbox scale | `max(0.72, 0.95 * 0.975^i)` | Keeps the opening hit target near painted bounds |
 
-The 60–140 ms safety floors and speed ceiling prevent zero-duration loops and numerical instability;
-the combined late-round behavior is still functionally impossible. Values may be tuned during Phase
-2 visual playtesting, but all curves must remain monotonic and the crowd ceiling remains fixed.
+The 60–180 ms safety floors and speed ceiling prevent zero-duration loops and numerical instability;
+the combined late-round behavior is still functionally impossible. Values may be tuned during visual
+playtesting, but all curves must remain monotonic and the crowd ceiling remains fixed.
 
 ## 9. Mitch Behavior Contract
 
 ### Visual Identity
 
-- Recognizable original head caricature with separate face, eyes, lids, mouth, neck, and expression
-  layers.
-- Olive turtle body, brown patterned shell, small tie, and four animated limbs.
-- Signature readable motions: slow blink, cautious neck extension, shell tuck, hurried scuttle.
+- Recognizable owner-supplied head cutout with its own neck edge, rendered as one local PNG layer.
+- Olive turtle body, glossy green segmented arcade shell with a gold rim, small tie, and four
+  animated limbs.
+- Signature readable motions: brief cutout peek, cautious neck extension, shell tuck, hurried
+  scuttle.
 - No red-and-white striped costume or direct hidden-object-franchise visual reference.
 
 ### Navigation
@@ -168,15 +169,16 @@ the combined late-round behavior is still functionally impossible. Values may be
 - He interpolates along path segments; he never teleports during active play.
 - Destination selection discourages immediate backtracking and repeating the same spot.
 - Route traversal may cross behind crowd actors and authored foreground occluders.
-- At a hiding spot he may idle, peek, change expression, reverse, or choose the next route.
+- At a hiding spot he may idle, peek, reverse, or choose the next route.
 
-### Early-Round Fairness
+### Opening Challenge
 
-- Round one begins with at least 65% of Mitch's head visible.
-- The first route decision occurs no sooner than 2.4 seconds after the scene becomes playable.
-- A round-one full-occlusion interval cannot exceed 2.4 seconds.
+- Round one opens with one short, fully visible peek and then immediately routes Mitch toward an
+  opaque hiding spot when one is available.
+- The first route decision occurs after a maximum 600 ms opening peek.
+- A round-one full-occlusion interval cannot exceed 3.2 seconds.
 - Mitch must enter a visible transit or peek window after each full-occlusion interval.
-- The initial target hit region is approximately 15% larger than painted bounds.
+- The initial target hit region stays close to painted bounds rather than granting a hidden bonus.
 - Occluders block target clicks when they visually cover Mitch; invisible click-through is forbidden.
 
 ## 10. Living Crowd Contract
@@ -291,7 +293,8 @@ Target total duration: 3.3–4.0 seconds in full motion.
 
 1. **Recognition, 0–250 ms:** Input locks, crowd freezes into reaction poses, stage desaturates,
    and a warm spotlight isolates Mitch.
-2. **Tuck, 250–750 ms:** Mitch blinks, grimaces, and retracts head/limbs into the shell.
+2. **Tuck, 250–750 ms:** Mitch gives a startled cutout hold, then retracts head/limbs into the
+   shell.
 3. **Dispatch, 750–1100 ms:** A red-white-and-blue congressional pneumatic tube/portal appears and
    the shell begins spinning.
 4. **Travel, 1100–2600 ms:** Shell follows a visible curved SVG route toward a cartoon Capitol
@@ -362,7 +365,7 @@ The game is ready for release when a first-time player can:
 
 - Identify the goal without explanation.
 - Enjoy watching the scene before clicking anything.
-- Find Mitch in the first one or two rounds without feeling cheated.
+- Spot a real clue and have a viable shot at Mitch in the opening round without feeling cheated.
 - Understand every miss and why it consumed an attempt.
 - Laugh at both outcome sequences at least once.
 - Immediately choose to try another run.
