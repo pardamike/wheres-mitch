@@ -10,6 +10,8 @@
 
 `npm run verify` passed from the working tree after the final Phase 5 changes.
 
+**Validated source commit:** `e26486f` (`feat: polish local release experience`)
+
 | Check | Result |
 |---|---|
 | TypeScript, ESLint, Prettier | Passed |

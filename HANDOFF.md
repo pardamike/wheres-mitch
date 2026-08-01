@@ -4,8 +4,8 @@
 
 **Branch:** `main`
 
-**Status:** All five gameplay phases are implemented. Phase 5 local QA, final documentation,
-verification, commit, and push are the active work.
+**Status:** All five gameplay phases are implemented. Phase 5 local QA is verified, committed, and
+pushed; local ZIP/checksum packaging is the remaining in-scope handoff step.
 
 ## Non-negotiables
 
@@ -51,9 +51,9 @@ Already passed during this phase:
   direct-file browser checks;
 - hosted Chrome and Firefox end-to-end smoke; direct-file Chrome and Firefox smoke.
 
-Before committing, run the complete `npm run verify`, inspect the actual completion status, run
-`git diff --check`, then commit/push the Phase 5 change. `npm run package` must be run only after a
-clean committed worktree; it creates ignored local output and never deploys.
+`npm run verify` passed on the Phase 5 source commit. Commit `e26486f` (`feat: polish local release
+experience`) is pushed to `main`. `npm run package` must be run only from this clean committed
+worktree; it creates ignored local output and never deploys.
 
 ## Known release-review boundaries
 
@@ -73,7 +73,7 @@ clean committed worktree; it creates ignored local output and never deploys.
 | Living world/difficulty | `4c4ee90` | Seeded crowd, Mitch routing, occlusion, pause/performance |
 | Outcomes/audio | `a757e47` | Original art, capture/escape, audio, controls |
 | Scene deck/variety | `6bdee96` | Fair/airport, seeded variation, no-repeat deck |
-| Release polish | pending | Local storage, accessibility/responsiveness, artifact/browser QA |
+| Release polish | `e26486f` | Local storage, accessibility/responsiveness, artifact/browser QA |
 
 ## Resume order
 
