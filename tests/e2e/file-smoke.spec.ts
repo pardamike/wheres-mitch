@@ -27,7 +27,7 @@ test('opens directly from file and completes a real catch without network activi
     }
   });
 
-  await page.goto(`${gameFileUrl}?seed=324001&debug=1`);
+  await page.goto(`${gameFileUrl}?seed=324001&scene=washington&debug=1`);
   await expect(page.getByRole('heading', { name: "WHERE'S MITCH?" })).toBeVisible();
   await page.getByRole('button', { name: 'START THE SEARCH' }).click();
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');

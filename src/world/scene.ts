@@ -1,4 +1,6 @@
-import type { DifficultyProfile, HideSpot, SceneId } from '../core/types';
+import { createRng, deriveSeed } from '../core/rng';
+import type { DifficultyProfile, HideSpot, SceneId, Vec2 } from '../core/types';
+import type { SceneStageBuilder } from '../render/scene-stage';
 import { createCrowdActors, reactToMiss, updateCrowdActors } from './behaviors';
 import type { CrowdActor } from './actor';
 import { createMitch, updateMitch, type MitchRuntime } from './mitch';
@@ -6,7 +8,7 @@ import type { PathNetwork } from './path-network';
 
 export type BehaviorKind = 'commute' | 'queue' | 'conversation' | 'sit' | 'interact' | 'observe';
 
-const behaviorKinds: readonly BehaviorKind[] = [
+export const behaviorKinds: readonly BehaviorKind[] = [
   'commute',
   'queue',
   'conversation',
@@ -27,13 +29,56 @@ export interface SceneOccluder {
   opaque: boolean;
 }
 
+export interface SceneVariantOption {
+  id: string;
+}
+
+export interface SceneVariantTables {
+  palettes: readonly SceneVariantOption[];
+  props: readonly SceneVariantOption[];
+  crowd: readonly SceneVariantOption[];
+  routes: readonly SceneVariantOption[];
+  mitch: readonly SceneVariantOption[];
+}
+
+export interface SceneVariation {
+  paletteId: string;
+  propId: string;
+  crowdId: string;
+  routeId: string;
+  mitchId: string;
+}
+
+export interface SceneSeedStreams {
+  scene: number;
+  crowd: number;
+  mitch: number;
+  cosmetic: number;
+}
+
+export interface SceneViewBox {
+  width: number;
+  height: number;
+}
+
+export interface SceneCutsceneLandmarks {
+  captureDestination: Vec2;
+  escapeEntry: Vec2;
+  escapeExit: Vec2;
+}
+
 export interface SceneDefinition {
   id: SceneId;
   title: string;
+  viewBox: SceneViewBox;
   routeNetwork: PathNetwork;
   behaviorAnchors: readonly BehaviorAnchor[];
   hideSpots: readonly SceneHideSpot[];
   occluders: readonly SceneOccluder[];
+  variants: SceneVariantTables;
+  actorRoleWeights: Readonly<Record<BehaviorKind, number>>;
+  cutsceneLandmarks: SceneCutsceneLandmarks;
+  stageBuilder: SceneStageBuilder;
 }
 
 export interface SceneHideSpot extends HideSpot {
@@ -43,12 +88,124 @@ export interface SceneHideSpot extends HideSpot {
 export interface SceneInstance {
   definition: SceneDefinition;
   seed: number;
+  seedStreams: SceneSeedStreams;
+  variation: SceneVariation;
   difficulty: DifficultyProfile;
   actors: CrowdActor[];
   mitch: MitchRuntime;
 }
 
+export function createSceneSeedStreams(seed: number): SceneSeedStreams {
+  return Object.freeze({
+    scene: deriveSeed(seed, 'scene'),
+    crowd: deriveSeed(seed, 'crowd'),
+    mitch: deriveSeed(seed, 'mitch'),
+    cosmetic: deriveSeed(seed, 'cosmetic'),
+  });
+}
+
+function pickVariant(options: readonly SceneVariantOption[], seed: number): string {
+  return createRng(seed).pick(options).id;
+}
+
+export function selectSceneVariation(
+  definition: SceneDefinition,
+  streams: SceneSeedStreams,
+): SceneVariation {
+  const sceneRng = createRng(streams.scene);
+  return Object.freeze({
+    paletteId: sceneRng.pick(definition.variants.palettes).id,
+    routeId: sceneRng.pick(definition.variants.routes).id,
+    crowdId: pickVariant(definition.variants.crowd, streams.crowd),
+    mitchId: pickVariant(definition.variants.mitch, streams.mitch),
+    propId: pickVariant(definition.variants.props, streams.cosmetic),
+  });
+}
+
+function definitionForVariation(
+  definition: SceneDefinition,
+  variation: SceneVariation,
+): SceneDefinition {
+  const selectedMitchIndex = Math.max(
+    0,
+    definition.variants.mitch.findIndex((variant) => variant.id === variation.mitchId),
+  );
+  const selectedRouteIndex = Math.max(
+    0,
+    definition.variants.routes.findIndex((variant) => variant.id === variation.routeId),
+  );
+  const favoredSpot = selectedMitchIndex % definition.hideSpots.length;
+  return {
+    ...definition,
+    actorRoleWeights: behaviorKinds.reduce<Readonly<Record<BehaviorKind, number>>>(
+      (weights, kind, index) => {
+        const multiplier = 0.82 + ((index + selectedRouteIndex) % 3) * 0.18;
+        return { ...weights, [kind]: definition.actorRoleWeights[kind] * multiplier };
+      },
+      {} as Readonly<Record<BehaviorKind, number>>,
+    ),
+    hideSpots: definition.hideSpots.map((spot, index) => ({
+      ...spot,
+      weight: spot.weight * (index === favoredSpot ? 1.35 : 1),
+    })),
+  };
+}
+
 export function validateSceneDefinition(definition: SceneDefinition): void {
+  if (
+    !Number.isFinite(definition.viewBox.width) ||
+    !Number.isFinite(definition.viewBox.height) ||
+    definition.viewBox.width <= 0 ||
+    definition.viewBox.height <= 0
+  ) {
+    throw new Error(`Scene ${definition.id} needs finite positive view-box bounds.`);
+  }
+  if (typeof definition.stageBuilder !== 'function') {
+    throw new Error(`Scene ${definition.id} needs a stage builder.`);
+  }
+  for (const [name, options] of Object.entries(definition.variants)) {
+    const ids = new Set<string>();
+    if (options.length === 0) {
+      throw new Error(`Scene ${definition.id} needs at least one ${name} variant.`);
+    }
+    for (const option of options) {
+      if (!option.id || ids.has(option.id)) {
+        throw new Error(`Scene ${definition.id} has invalid ${name} variant IDs.`);
+      }
+      ids.add(option.id);
+    }
+  }
+  for (const kind of behaviorKinds) {
+    const weight = definition.actorRoleWeights[kind];
+    if (!Number.isFinite(weight) || weight <= 0) {
+      throw new Error(`Scene ${definition.id} has an invalid ${kind} actor weight.`);
+    }
+  }
+  for (const [landmark, point] of Object.entries(definition.cutsceneLandmarks)) {
+    if (
+      !Number.isFinite(point.x) ||
+      !Number.isFinite(point.y) ||
+      point.x < 0 ||
+      point.x > definition.viewBox.width ||
+      point.y < 0 ||
+      point.y > definition.viewBox.height
+    ) {
+      throw new Error(`Scene ${definition.id} has an invalid ${landmark} cutscene landmark.`);
+    }
+  }
+  const routeNodes = definition.routeNetwork.nodes;
+  if (routeNodes.length === 0) {
+    throw new Error(`Scene ${definition.id} needs at least one route node.`);
+  }
+  const firstNodeId = routeNodes[0]?.id;
+  for (const node of routeNodes) {
+    if (node.x > definition.viewBox.width || node.y > definition.viewBox.height) {
+      throw new Error(`Route node ${node.id} is outside the ${definition.id} view box.`);
+    }
+    if (!firstNodeId || !definition.routeNetwork.isReachable(firstNodeId, node.id)) {
+      throw new Error(`Route node ${node.id} is disconnected in scene ${definition.id}.`);
+    }
+  }
   const anchorIds = new Set<string>();
   for (const anchor of definition.behaviorAnchors) {
     if (!anchor.id || anchorIds.has(anchor.id)) {
@@ -81,9 +238,9 @@ export function validateSceneDefinition(definition: SceneDefinition): void {
     }
     if (
       spot.position.x < 0 ||
-      spot.position.x > 1440 ||
+      spot.position.x > definition.viewBox.width ||
       spot.position.y < 0 ||
-      spot.position.y > 900
+      spot.position.y > definition.viewBox.height
     ) {
       throw new Error(`Hide spot ${spot.id} has out-of-bounds stage coordinates.`);
     }
@@ -133,12 +290,17 @@ export function createSceneInstance(
   difficulty: DifficultyProfile,
 ): SceneInstance {
   validateSceneDefinition(definition);
+  const seedStreams = createSceneSeedStreams(seed);
+  const variation = selectSceneVariation(definition, seedStreams);
+  const runtimeDefinition = definitionForVariation(definition, variation);
   return {
-    definition,
+    definition: runtimeDefinition,
     seed: seed >>> 0,
+    seedStreams,
+    variation,
     difficulty,
-    actors: createCrowdActors(definition, seed, difficulty),
-    mitch: createMitch(definition, seed, difficulty),
+    actors: createCrowdActors(runtimeDefinition, seedStreams.crowd, difficulty),
+    mitch: createMitch(runtimeDefinition, seedStreams.mitch, difficulty),
   };
 }
 

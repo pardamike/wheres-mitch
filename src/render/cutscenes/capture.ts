@@ -55,9 +55,10 @@ function quadraticPoint(start: Vec2, control: Vec2, end: Vec2, progress: number)
 export function getCapturePresentation(
   snapshot: SequenceSnapshot,
   origin: Vec2,
+  destination: Vec2 = { x: 1125, y: 575 },
 ): CapturePresentation {
   const progress = beatProgress(snapshot);
-  const finalPosition = { x: 1125, y: 575 };
+  const finalPosition = { ...destination };
   const base: CapturePresentation = {
     beatId: snapshot.beatId,
     headline: 'FOUND HIM!',

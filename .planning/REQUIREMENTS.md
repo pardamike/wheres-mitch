@@ -38,13 +38,13 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 ### Living Scene Deck
 
 - [x] **WORLD-01**: Player can complete a round in an animated Washington street scene.
-- [ ] **WORLD-02**: Player can complete a round in an animated Kentucky county fair scene.
-- [ ] **WORLD-03**: Player can complete a round in an animated airport concourse scene.
+- [x] **WORLD-02**: Player can complete a round in an animated Kentucky county fair scene.
+- [x] **WORLD-03**: Player can complete a round in an animated airport concourse scene.
 - [x] **WORLD-04**: Each scene contains a performant crowd whose members walk, stop, queue, chat,
   sit, react, or interact with props rather than moving as undirected noise.
-- [ ] **WORLD-05**: Scene seed changes crowd identities, palettes, props, paths, and Mitch hiding
+- [x] **WORLD-05**: Scene seed changes crowd identities, palettes, props, paths, and Mitch hiding
   choices while preserving the template's recognizable layout and valid routes.
-- [ ] **WORLD-06**: A shuffle-bag scene selector shows every template before reuse and prevents an
+- [x] **WORLD-06**: A shuffle-bag scene selector shows every template before reuse and prevents an
   immediate template repeat across successful rounds.
 
 ### Outcome Sequences
@@ -172,11 +172,11 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 | MITCH-05 | Phase 2 | Validated |
 | MITCH-06 | Phase 2 | Validated |
 | WORLD-01 | Phase 1 | Validated |
-| WORLD-02 | Phase 4 | Pending |
-| WORLD-03 | Phase 4 | Pending |
+| WORLD-02 | Phase 4 | Validated |
+| WORLD-03 | Phase 4 | Validated |
 | WORLD-04 | Phase 2 | Validated |
-| WORLD-05 | Phase 4 | Pending |
-| WORLD-06 | Phase 4 | Pending |
+| WORLD-05 | Phase 4 | Validated |
+| WORLD-06 | Phase 4 | Validated |
 | OUT-01 | Phase 3 | Validated |
 | OUT-02 | Phase 3 | Validated |
 | OUT-03 | Phase 3 | Validated |
@@ -214,5 +214,5 @@ alive must be funny, fair at first, and immediately satisfying to replay.
 
 ---
 *Requirements defined: 2026-07-31*  
-*Last updated: 2026-07-31 after Phase 3 technical verification; AUDIO-02 remains pending Phase 5
-persistence work.*
+*Last updated: 2026-07-31 after Phase 4 technical verification; release persistence, accessibility,
+cross-browser hardening, and non-deployment packaging remain in Phase 5.*

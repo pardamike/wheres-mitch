@@ -70,6 +70,24 @@ function chooseNextRoutine(actor: CrowdActor): BehaviorKind {
   return routines[(currentIndex + offset) % routines.length] as BehaviorKind;
 }
 
+function chooseInitialRoutine(
+  root: ReturnType<typeof createRng>,
+  definition: SceneDefinition,
+): BehaviorKind {
+  const totalWeight = routines.reduce(
+    (total, routine) => total + definition.actorRoleWeights[routine],
+    0,
+  );
+  let choice = root.next() * totalWeight;
+  for (const routine of routines) {
+    choice -= definition.actorRoleWeights[routine];
+    if (choice <= 0) {
+      return routine;
+    }
+  }
+  return routines[routines.length - 1] as BehaviorKind;
+}
+
 function advanceActor(
   actor: CrowdActor,
   definition: SceneDefinition,
@@ -94,14 +112,14 @@ function advanceActor(
 
 export function createCrowdActors(
   definition: SceneDefinition,
-  seed: number,
+  crowdSeed: number,
   difficulty: DifficultyProfile,
 ): CrowdActor[] {
-  const root = createRng(deriveSeed(seed, 'crowd'));
+  const root = createRng(crowdSeed);
   const actors: CrowdActor[] = [];
   for (let index = 0; index < difficulty.crowdCount; index += 1) {
-    const routine = routines[index % routines.length] as BehaviorKind;
-    const actorRng = createRng(deriveSeed(seed, `actor-${index}`));
+    const routine = chooseInitialRoutine(root, definition);
+    const actorRng = createRng(deriveSeed(crowdSeed, `actor-${index}`));
     const anchor = actorRng.pick(anchorsFor(definition, routine));
     const node = definition.routeNetwork.getNode(anchor.nodeId);
     actors.push({

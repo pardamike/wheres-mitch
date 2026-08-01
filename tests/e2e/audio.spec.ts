@@ -23,7 +23,7 @@ test('audio remains lazy until Start and mute/pause lifecycle stays nonfatal', a
   });
   page.on('pageerror', (error) => errors.push(error.message));
 
-  await page.goto('/?seed=324001&debug=1');
+  await page.goto('/?seed=324001&scene=washington&debug=1');
   expect((await audioDebug(page)).unlocked).toBe(false);
   expect((await audioDebug(page)).cueCount).toBe(0);
 

@@ -54,7 +54,7 @@ async function measureFrames(page: Page, durationMs = 30_000): Promise<FrameMetr
 }
 
 async function startMaximumCrowdRound(page: Page): Promise<void> {
-  await page.goto('/?seed=324001&round=13&debug=1');
+  await page.goto('/?seed=324001&round=13&scene=washington&debug=1');
   await page.getByRole('button', { name: 'START THE SEARCH' }).click();
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
   await expect

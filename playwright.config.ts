@@ -16,7 +16,7 @@ export default defineConfig({
     {
       name: 'chromium',
       testMatch:
-        /(vertical-slice|occlusion|pause|performance|controls-and-copy|capture-cutscene|escape-cutscene|audio)\.spec\.ts/,
+        /(vertical-slice|occlusion|pause|performance|controls-and-copy|capture-cutscene|escape-cutscene|audio|kentucky-fair|airport|scene-deck|visual)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:4173' },
     },
     {

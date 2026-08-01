@@ -6,7 +6,7 @@ interface GameDebug {
 }
 
 async function startRound(page: Page, reducedMotion = false): Promise<void> {
-  await page.goto('/?seed=324001&debug=1');
+  await page.goto('/?seed=324001&scene=washington&debug=1');
   if (reducedMotion) {
     await page.getByRole('button', { name: 'MOTION: SYSTEM' }).click();
     await expect(page.getByRole('button', { name: 'MOTION: REDUCE' })).toBeVisible();
@@ -64,7 +64,10 @@ test('a successful catch plays every Capitol-return beat and advances exactly on
 test('capture Skip appears only after the outcome is established and resolves the same round once', async ({
   page,
 }) => {
-  await startRound(page, true);
+  // A reduced-motion capture completes only a few hundred milliseconds after Skip is enabled,
+  // which makes this a scheduler race instead of a control test. Full motion leaves the intended
+  // one-second semantic Skip window available for real input.
+  await startRound(page);
   await page.locator('#mitch-root').click({ force: true });
   await expect(page.locator('#outcome-skip')).toBeHidden();
   await page.waitForFunction(() => {

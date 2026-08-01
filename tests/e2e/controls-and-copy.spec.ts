@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function startSeededRound(page: Page): Promise<void> {
-  await page.goto('/?seed=324001&debug=1');
+  await page.goto('/?seed=324001&scene=washington&debug=1');
   await expect(page.getByRole('heading', { name: "WHERE'S MITCH?" })).toBeVisible();
   await page.getByRole('button', { name: 'START THE SEARCH' }).click();
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
@@ -10,7 +10,7 @@ async function startSeededRound(page: Page): Promise<void> {
 test('publishes clear fictional framing without copied-franchise or factual-claim copy', async ({
   page,
 }) => {
-  await page.goto('/?seed=324001');
+  await page.goto('/?seed=324001&scene=washington');
   const title = page.locator('#title-screen');
   await expect(title.getByText('Ten clicks. One extremely evasive turtle.')).toBeVisible();
   await expect(title.locator('.disclaimer')).toContainText(

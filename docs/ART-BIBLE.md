@@ -339,13 +339,13 @@ recorded audio, remote source, or embedded raster is shipped.
 | Capitol vignette | Project-original inline SVG | `src/render/art/capitol.ts` | MIT project asset | None | Original simplified cartoon architecture | Shipped |
 | Crowd body-part library | Project-original inline SVG | `src/render/art/crowd.ts` | MIT project asset | None | Twelve modular silhouette families and accessories | Shipped |
 | Shared SVG art utilities | Project-original code | `src/render/art/shared.ts` | MIT project asset | None | Safe DOM construction and original palette helpers | Shipped |
-| Washington scene/background/props | Project-original inline SVG | `src/render/stage-renderer.ts` | MIT project asset | None | Original street, buildings, transit, trees, and effects | Shipped |
+| Washington scene/background/props | Project-original inline SVG | `src/render/art/washington.ts`, `src/render/stage-renderer.ts` | MIT project asset | None | Original street, buildings, transit, trees, and effects | Implemented — owner review pending |
 | UI, title illustration, and lettering | Project-original HTML/CSS/inline SVG | `public/index.html`, `public/styles.css` | MIT project asset | None | Original controls, copy layout, and title vignette | Shipped |
 | Favicon | Project-original inline SVG | `public/favicon.svg` | MIT project asset | None | Original local icon | Shipped |
 | Visual effects and cutscene composition | Project-original inline SVG/code | `src/render/cutscenes/sequence.ts`, `src/render/cutscenes/capture.ts`, `src/render/cutscenes/escape.ts` | MIT project asset | None | Original pooled effects and outcome choreography | Implemented — owner review pending |
 | Sound cues | Synthesized at runtime | `src/audio/audio-engine.ts`, `src/audio/cues.ts` | Project-original parameters/code | None | Oscillator/noise/envelope synthesis only | Implemented — owner review pending |
-| Kentucky fair scene | Project-original inline SVG | Not yet implemented | MIT project asset | None | Pending Phase 4 | Planned |
-| Airport scene | Project-original inline SVG | Not yet implemented | MIT project asset | None | Pending Phase 4 | Planned |
+| Kentucky fair scene | Project-original inline SVG | `src/render/art/fair.ts` | MIT project asset | None | Original Ferris wheel, midway, pavilion, booths, prize wall, hay, livestock, and fairground props | Implemented — owner review pending |
+| Airport scene | Project-original inline SVG | `src/render/art/airport.ts` | MIT project asset | None | Original window wall, walkway, board, gate furniture, kiosk, luggage, and concourse props | Implemented — owner review pending |
 | Any recorded sound | Not approved for v1 | None | N/A | N/A | No recorded sound is shipped | Excluded |
 | Fonts | System font stacks | `public/styles.css` | Platform-provided | N/A | No bundled or remote font | Shipped |
 
@@ -366,3 +366,6 @@ Before Phase 3 is considered complete, human review must approve:
 Implementation review completed at desktop and 667×375 landscape scale on 2026-07-31. Owner sign-off
 on the caricature, flag treatment, outcome timing, and published copy remains required before a public
 release.
+
+The Phase 4 fair and airport compositions have automated desktop/mobile coverage. Owner visual review
+of their density, target readability, and tone remains required before a public release.

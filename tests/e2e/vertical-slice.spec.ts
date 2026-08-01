@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function startSeededRound(page: Page) {
-  await page.goto('/?seed=324001&debug=1');
+  await page.goto('/?seed=324001&scene=washington&debug=1');
   await expect(page.getByRole('heading', { name: "WHERE'S MITCH?" })).toBeVisible();
   await expect(page.getByText('Ten clicks. One extremely evasive turtle.')).toBeVisible();
   await expect(page.locator('#title-screen .disclaimer')).toContainText(

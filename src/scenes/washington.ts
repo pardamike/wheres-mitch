@@ -1,4 +1,5 @@
 import type { DifficultyProfile } from '../core/types';
+import { buildWashingtonStage } from '../render/art/washington';
 import { PathNetwork, type RouteEdge, type RouteNode } from '../world/path-network';
 import {
   createSceneInstance,
@@ -127,10 +128,32 @@ const occluders: SceneOccluder[] = [
 const washingtonDefinition: SceneDefinition = {
   id: 'washington',
   title: 'WASHINGTON STREET',
+  viewBox: { width: 1440, height: 900 },
   routeNetwork: new PathNetwork(nodes, edges),
   behaviorAnchors,
   hideSpots,
   occluders,
+  variants: {
+    palettes: [{ id: 'washington-day' }, { id: 'washington-dusk' }],
+    props: [{ id: 'washington-red-awning' }, { id: 'washington-blue-awning' }],
+    crowd: [{ id: 'washington-commuters' }, { id: 'washington-tourists' }],
+    routes: [{ id: 'washington-crosswalks' }, { id: 'washington-civic-loop' }],
+    mitch: [{ id: 'washington-central' }, { id: 'washington-trees' }],
+  },
+  actorRoleWeights: {
+    commute: 1.4,
+    queue: 1,
+    conversation: 1,
+    sit: 0.8,
+    interact: 1,
+    observe: 0.9,
+  },
+  cutsceneLandmarks: {
+    captureDestination: { x: 1125, y: 575 },
+    escapeEntry: { x: 1280, y: 108 },
+    escapeExit: { x: 0, y: 0 },
+  },
+  stageBuilder: buildWashingtonStage,
 };
 
 export function getWashingtonDefinition(): SceneDefinition {

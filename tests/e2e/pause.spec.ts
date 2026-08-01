@@ -12,7 +12,7 @@ async function debugSnapshot(page: Page): Promise<GameDebugSnapshot> {
 }
 
 async function startRound(page: Page): Promise<void> {
-  await page.goto('/?seed=324001&debug=1');
+  await page.goto('/?seed=324001&scene=washington&debug=1');
   await page.getByRole('button', { name: 'START THE SEARCH' }).click();
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
 }

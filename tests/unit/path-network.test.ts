@@ -52,6 +52,7 @@ describe('authored path networks', () => {
     const definition: SceneDefinition = {
       id: 'washington',
       title: 'fixture',
+      viewBox: { width: 1440, height: 900 },
       routeNetwork: disconnected,
       behaviorAnchors: [
         { id: 'commute', kind: 'commute', nodeId: 'a' },
@@ -66,9 +67,30 @@ describe('authored path networks', () => {
         { id: 'two', position: { x: 300, y: 100 }, approachNodeId: 'b', revealRatio: 1, weight: 1 },
       ],
       occluders: [],
+      variants: {
+        palettes: [{ id: 'palette' }],
+        props: [{ id: 'props' }],
+        crowd: [{ id: 'crowd' }],
+        routes: [{ id: 'routes' }],
+        mitch: [{ id: 'mitch' }],
+      },
+      actorRoleWeights: {
+        commute: 1,
+        queue: 1,
+        conversation: 1,
+        sit: 1,
+        interact: 1,
+        observe: 1,
+      },
+      cutsceneLandmarks: {
+        captureDestination: { x: 1100, y: 600 },
+        escapeEntry: { x: 1300, y: 100 },
+        escapeExit: { x: 0, y: 0 },
+      },
+      stageBuilder: () => ({ updateAmbient: () => undefined }),
     };
 
-    expect(() => validateSceneDefinition(definition)).toThrow('cannot reach another');
+    expect(() => validateSceneDefinition(definition)).toThrow('disconnected');
   });
 
   it('clamps interpolation exactly at segment endpoints', () => {

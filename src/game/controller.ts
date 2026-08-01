@@ -3,9 +3,9 @@ import { difficultyForRound } from '../core/difficulty';
 import type { GameEvent } from '../core/events';
 import { createInitialState, isStageInteractive, reduceGame } from '../core/reducer';
 import { createRunSeed, deriveSeed, parseRoundFromSearch, parseSeedFromSearch } from '../core/rng';
-import type { MotionMode } from '../core/types';
+import type { MotionMode, SceneId } from '../core/types';
 import { AudioEngine } from '../audio/audio-engine';
-import { createWashingtonScene } from '../scenes/washington';
+import { createScene } from '../scenes/registry';
 import { captureBeats } from '../render/cutscenes/capture';
 import { escapeBeats } from '../render/cutscenes/escape';
 import { SequenceRunner, type SequenceSnapshot } from '../render/cutscenes/sequence';
@@ -13,6 +13,7 @@ import { StageRenderer, type OutcomeRenderState } from '../render/stage-renderer
 import { UiRenderer } from '../render/ui-renderer';
 import { mitchSnapshot } from '../world/mitch';
 import { reactToSceneMiss, updateScene, type SceneInstance } from '../world/scene';
+import { parseSceneOverride, SceneSelector } from '../world/scene-selector';
 import { attachStageInput } from './input';
 import {
   recordCompletedRounds,
@@ -81,6 +82,8 @@ export class GameController {
   private creditsOpen = false;
   private outcome: ActiveOutcome | null = null;
   private readonly debugEnabled: boolean;
+  private readonly sceneOverride: SceneId | null;
+  private sceneSelector = new SceneSelector(0);
   private sceneTitle = 'WASHINGTON STREET';
   private detachVisibility: (() => void) | null = null;
 
@@ -94,6 +97,7 @@ export class GameController {
     this.stageRenderer = new StageRenderer(this.nodes.stage);
     this.uiRenderer = new UiRenderer();
     this.debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
+    this.sceneOverride = parseSceneOverride(window.location.search);
     this.audio.setMuted(!this.state.soundEnabled);
     if (document.hidden) {
       this.clock.pause('hidden');
@@ -258,6 +262,10 @@ export class GameController {
       this.restartConfirmationOpen = false;
       this.creditsOpen = false;
       this.clock.reset();
+      this.sceneSelector = new SceneSelector(next.runSeed);
+      if (!this.sceneOverride) {
+        this.sceneSelector.skip(Math.max(0, next.round - 1));
+      }
       if (document.hidden) {
         this.clock.pause('hidden');
       }
@@ -339,10 +347,11 @@ export class GameController {
   }
 
   private prepareRound(): void {
-    const sceneSeed = deriveSeed(this.state.runSeed, `round-${this.state.round}-scene`);
+    const sceneId = this.sceneSelector.next(this.sceneOverride);
+    const sceneSeed = deriveSeed(this.state.runSeed, `round-${this.state.round}-${sceneId}-scene`);
     const difficulty = difficultyForRound(this.state.completedRounds);
-    this.scene = createWashingtonScene(sceneSeed, difficulty);
-    this.stageRenderer.buildWashington(this.scene);
+    this.scene = createScene(sceneId, sceneSeed, difficulty);
+    this.stageRenderer.build(this.scene);
     this.sceneTitle = this.scene.definition.title;
     this.dispatch({ type: 'ROUND_READY', sceneId: this.scene.definition.id, sceneSeed });
   }
@@ -446,6 +455,9 @@ export class GameController {
       round: this.state.round,
       sceneId: this.state.sceneId,
       sceneSeed: this.state.sceneSeed,
+      sceneVariation: scene ? Object.freeze({ ...scene.variation }) : null,
+      sceneSeedStreams: scene ? Object.freeze({ ...scene.seedStreams }) : null,
+      sceneDeck: this.sceneSelector.snapshot(),
       clicksRemaining: this.state.clicksRemaining,
       completedRounds: this.state.completedRounds,
       difficulty: scene ? Object.freeze({ ...scene.difficulty }) : null,

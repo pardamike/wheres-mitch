@@ -56,9 +56,18 @@ function ropeAnchorX(helicopter: Vec2): number {
 export function getEscapePresentation(
   snapshot: SequenceSnapshot,
   origin: Vec2,
+  landmarks: { entry: Vec2; exit: Vec2 } = {
+    entry: { x: 1280, y: 108 },
+    exit: { x: 0, y: 0 },
+  },
 ): EscapePresentation {
   const progress = beatProgress(snapshot);
-  const helicopterTarget = { x: origin.x - ROPE_ANCHOR_X * HELICOPTER_SCALE, y: 108 };
+  const helicopterTarget = {
+    x: origin.x - ROPE_ANCHOR_X * HELICOPTER_SCALE,
+    y: landmarks.entry.y,
+  };
+  const helicopterEntry = { x: landmarks.entry.x + 260, y: landmarks.entry.y };
+  const helicopterExit = { x: landmarks.exit.x - 620, y: landmarks.exit.y - 170 };
   const loadStart = { ...origin };
   const base: EscapePresentation = {
     beatId: snapshot.beatId,
@@ -70,7 +79,7 @@ export function getEscapePresentation(
     tuckProgress: 0,
     moneyOpacity: 0,
     moneyScale: 0,
-    helicopterPosition: { x: 1540, y: 108 },
+    helicopterPosition: helicopterEntry,
     helicopterOpacity: 0,
     helicopterScale: HELICOPTER_SCALE,
     rotorDegrees: 0,
@@ -104,8 +113,8 @@ export function getEscapePresentation(
       base.moneyScale = 1;
       base.helicopterOpacity = 1;
       base.helicopterPosition = {
-        x: lerp(1540, helicopterTarget.x, entry),
-        y: lerp(78, helicopterTarget.y, entry),
+        x: lerp(helicopterEntry.x, helicopterTarget.x, entry),
+        y: lerp(helicopterEntry.y - 30, helicopterTarget.y, entry),
       };
       base.rotorDegrees = 840 + progress * 2400;
       base.windOpacity = 1;
@@ -151,8 +160,8 @@ export function getEscapePresentation(
       base.moneyScale = 1;
       base.helicopterOpacity = 1;
       base.helicopterPosition = {
-        x: lerp(helicopterTarget.x, -620, exit),
-        y: lerp(-35, -170, exit),
+        x: lerp(helicopterTarget.x, helicopterExit.x, exit),
+        y: lerp(-35, helicopterExit.y, exit),
       };
       base.rotorDegrees = 7440 + progress * 3000;
       base.ropeOpacity = 1 - progress;

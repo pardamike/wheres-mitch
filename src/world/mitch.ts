@@ -1,4 +1,4 @@
-import { createRng, deriveSeed, type SeededRng } from '../core/rng';
+import { createRng, type SeededRng } from '../core/rng';
 import type { DifficultyProfile, Vec2 } from '../core/types';
 import { moveTowards } from './path-network';
 import type { SceneDefinition, SceneHideSpot } from './scene';
@@ -171,7 +171,7 @@ export function createMitch(
     clickable: true,
     visibleRatio: Math.max(0.65, initialSpot.revealRatio),
     profile,
-    rng: createRng(deriveSeed(seed, 'mitch')),
+    rng: createRng(seed),
     trace: [`peek:${initialSpot.id}`],
   };
   return mitch;
