@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:standalone": "node scripts/build-standalone.mjs",
     "dev": "node scripts/dev.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src tests scripts playwright.config.ts vitest.config.mts --max-warnings=0",

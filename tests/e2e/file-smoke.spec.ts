@@ -1,23 +1,23 @@
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { catchMitch } from './scene-helpers';
 
 const repositoryRoot = process.cwd();
 const gameFileUrl = pathToFileURL(path.join(repositoryRoot, 'dist', 'index.html')).href;
+const standaloneFilePath = path.join(repositoryRoot, 'release', 'wheres-mitch-standalone.html');
+const standaloneGameFileUrl = pathToFileURL(standaloneFilePath).href;
 
 test.beforeAll(() => {
-  execFileSync(process.execPath, ['scripts/build.mjs'], { cwd: repositoryRoot, stdio: 'pipe' });
-  execFileSync(process.execPath, ['scripts/verify-dist.mjs'], {
+  execFileSync(process.execPath, ['scripts/build-standalone.mjs'], {
     cwd: repositoryRoot,
     stdio: 'pipe',
   });
 });
 
-test('opens directly from file and completes catch, escape, restart, and settings without network activity', async ({
-  page,
-}) => {
+async function completeOfflineGame(page: Page, gameUrl: string, expectedHeadHref: string | RegExp) {
   const errors: string[] = [];
   const remoteRequests: string[] = [];
   page.on('console', (message) => {
@@ -32,8 +32,9 @@ test('opens directly from file and completes catch, escape, restart, and setting
     }
   });
 
-  await page.goto(`${gameFileUrl}?seed=324001&scene=washington&debug=1`);
+  await page.goto(`${gameUrl}?seed=324001&scene=washington&debug=1`);
   await expect(page.getByRole('heading', { name: "WHERE'S MITCH?" })).toBeVisible();
+  await expect(page.locator('#title-mitch-head')).toHaveAttribute('href', expectedHeadHref);
   await page.locator('#title-screen [data-action="title-motion"]').click();
   await page.locator('#title-screen [data-action="title-motion"]').click();
   await expect(page.locator('#title-screen [data-action="title-motion"]')).toHaveText(
@@ -43,7 +44,7 @@ test('opens directly from file and completes catch, escape, restart, and setting
   await expect(page.locator('#game-root')).toHaveAttribute('data-mode', 'playing');
   await expect(page.locator('#mitch-root [data-asset="mitch-head"]')).toHaveAttribute(
     'href',
-    './assets/mitch-head.png',
+    expectedHeadHref,
   );
   await page.locator('#game-stage').click({ position: { x: 24, y: 24 } });
   await expect(page.locator('#clicks-remaining')).toHaveText('9');
@@ -68,4 +69,26 @@ test('opens directly from file and completes catch, escape, restart, and setting
 
   expect(errors).toEqual([]);
   expect(remoteRequests).toEqual([]);
+}
+
+test('opens directly from the normal file artifact and completes catch, escape, restart, and settings without network activity', async ({
+  page,
+}) => {
+  await completeOfflineGame(page, gameFileUrl, './assets/mitch-head.png');
+});
+
+test('opens the single self-contained HTML artifact directly without network activity', async ({
+  page,
+}) => {
+  const standaloneHtml = readFileSync(standaloneFilePath, 'utf8');
+  const faviconHref = standaloneHtml.match(
+    /<link rel="icon" href="([^"]+)" type="image\/svg\+xml" \/>/,
+  )?.[1];
+  expect(faviconHref).toMatch(/^data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+$/);
+  expect(standaloneHtml).not.toContain('./styles.css');
+  expect(standaloneHtml).not.toContain('./game.js');
+  expect(standaloneHtml).not.toContain('./favicon.svg');
+  expect(standaloneHtml).not.toContain('./assets/mitch-head.png');
+
+  await completeOfflineGame(page, standaloneGameFileUrl, /^data:image\/png;base64,/);
 });

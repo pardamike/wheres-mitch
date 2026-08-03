@@ -1,12 +1,13 @@
 # Local Release Verification Results
 
-## Latest: Mitch cutout, hunt-tuning, viewport-fit, and cover/footer polish
+## Latest: standalone Slack-share build
 
-**Run date:** 2026-08-01
+**Run date:** 2026-08-03
 
-`npm run verify` passed after integrating the owner-supplied local Mitch cutout, the original
-green/gold retro-arcade shell, the faster/more occlusion-focused opening behavior, the
-full-viewport-height gameplay shell, matching title-cover art, and a visible footer top border.
+`npm run verify` passed after adding `npm run build:standalone`. The command rebuilds and verifies
+the ordinary static artifact, then creates ignored `release/wheres-mitch-standalone.html` with the
+CSS, game IIFE, favicon, and local Mitch cutout embedded. The normal multi-file `dist/` artifact
+remains unchanged.
 
 | Check | Result |
 |---|---|
@@ -15,13 +16,15 @@ full-viewport-height gameplay shell, matching title-cover art, and a visible foo
 | Production build and artifact verifier | Passed; six root files plus `assets/mitch-head.png` |
 | Chromium suite | 36 hosted/touch/visual/performance tests passed |
 | Chrome + Firefox hosted smoke | Both completed catch, escape, restart, and no-unexpected-request checks |
-| Chrome + Firefox `file://` smoke | Both completed settings, catch, escape, and restart with zero remote requests/errors |
+| Chrome + Firefox `file://` smoke | Normal and standalone artifacts each completed settings, catch, escape, and restart with zero remote requests/errors |
 | Responsive viewport fit | Game shell, footer, and document height remain within each supported landscape viewport |
 | Cover/footer polish | Title references the bundled cutout image; the stable footer remains visibly bounded |
+| Standalone share file | One 1,869,663-byte HTML file; CSS, IIFE, favicon, and PNG are inlined and the favicon data URL is validated |
 
 The artifact verifier confirms the PNG signature and its relative path inside the classic IIFE
-artifact. Hosted request checks allow only the same-origin favicon and this documented local image;
-any other post-load request, including a remote one, fails.
+artifact. The standalone builder replaces those relative paths with validated data URLs. Hosted
+request checks allow only the same-origin favicon and this documented local image; any other
+post-load request, including a remote one, fails.
 
 The ignored v1.0.0 ZIP documented below predates this asset update. It was intentionally not
 regenerated because no release/package action was requested.

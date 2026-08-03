@@ -68,6 +68,7 @@ No dependency may be added to solve a task that is straightforward with the plat
 ├── playwright.config.ts
 ├── scripts/
 │   ├── build.mjs
+│   ├── build-standalone.mjs
 │   ├── dev.mjs
 │   └── package-release.mjs
 ├── public/
@@ -158,11 +159,16 @@ create this tree incrementally; later-scene, audio, storage, and release files a
 
 The release artifact is the contents of `dist/`, not the source tree.
 
+`npm run build:standalone` first rebuilds and verifies that artifact, then writes the ignored
+`release/wheres-mitch-standalone.html` share file. It embeds the stylesheet, classic IIFE, favicon,
+and approved Mitch PNG as local inline/data content, leaving the normal `dist/` artifact unchanged.
+
 ## 6. Commands Contract
 
 ```text
 npm run dev             build/watch and serve with a tiny Node-only local static server
 npm run build           clean deterministic production build
+npm run build:standalone create one self-contained HTML share file in ignored release output
 npm run typecheck       tsc --noEmit
 npm run lint            ESLint over source, scripts, and tests
 npm run format          Prettier write

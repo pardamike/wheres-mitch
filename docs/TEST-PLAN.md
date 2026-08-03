@@ -210,6 +210,9 @@ Required assertions:
 - Capture all `console.error`, `pageerror`, and failed request events; expected count is zero.
 - Abort on any `http:`, `https:`, WebSocket, beacon, or fetch request.
 - Storage behavior may be available or memory fallback; both are accepted.
+- The single-file share build must inline CSS, the game IIFE, favicon, and Mitch PNG; opening its
+  lone HTML file from `file://` must complete the same catch/escape/restart smoke with no sibling
+  asset dependency.
 
 The file test is separate from hosted E2E so a passing local server cannot mask module/path errors.
 

@@ -17,6 +17,18 @@ open dist/index.html
 For a local development server, run `npm run dev` and visit the printed address. The game uses only
 local files at runtime; local records and settings are optional browser storage.
 
+## Share one HTML file
+
+```bash
+npm run build:standalone
+open release/wheres-mitch-standalone.html
+```
+
+This produces one self-contained HTML file with the stylesheet, game bundle, favicon, and Mitch
+cutout embedded. Upload `release/wheres-mitch-standalone.html` to Slack; colleagues should download
+it and open it locally in a current desktop browser. Slack's attachment preview will not run the
+game, and no hosting or network access is needed.
+
 ## Verify
 
 ```bash

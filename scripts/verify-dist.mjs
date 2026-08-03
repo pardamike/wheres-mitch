@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { productionDirectory } from './build.mjs';
 
 const expectedFiles = [
@@ -61,7 +62,7 @@ async function artifactFileNames(directory = productionDirectory, relativeDirect
   return files.flat().sort();
 }
 
-async function main() {
+export async function verifyProductionArtifact() {
   const fileNames = await artifactFileNames();
   if (fileNames.join('|') !== expectedFiles.join('|')) {
     fail(`expected ${expectedFiles.join(', ')}, found ${fileNames.join(', ')}.`);
@@ -84,8 +85,8 @@ async function main() {
   if (!html?.includes('href="./styles.css"') || !html.includes('src="./game.js"')) {
     fail('index.html must reference the stylesheet and classic game script relatively.');
   }
-  if (!html.includes('href="./favicon.svg"')) {
-    fail('index.html must reference the favicon relatively.');
+  if (!html.includes('<link rel="icon" href="./favicon.svg" type="image/svg+xml" />')) {
+    fail('index.html must contain the complete relative favicon link.');
   }
   if (!script?.includes('./assets/mitch-head.png')) {
     fail('game.js must reference the local Mitch head cutout relatively.');
@@ -105,7 +106,11 @@ async function main() {
   console.log(`Verified portable static artifact: ${fileNames.join(', ')}`);
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+const invokedAsScript =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedAsScript) {
+  verifyProductionArtifact().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}

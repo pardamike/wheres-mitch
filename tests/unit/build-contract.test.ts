@@ -33,6 +33,7 @@ describe('static build contract', () => {
 
     expect(html).toContain('href="./styles.css"');
     expect(html).toContain('src="./game.js"');
+    expect(html).toContain('<link rel="icon" href="./favicon.svg" type="image/svg+xml" />');
     expect(html).not.toMatch(/type\s*=\s*["']module["']/i);
     const runtimeArtifact = `${html}\n${styles}\n${script}`
       .split('http://www.w3.org/2000/svg')

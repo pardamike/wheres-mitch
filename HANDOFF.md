@@ -1,12 +1,12 @@
 # Where's Mitch? — Execution Handoff
 
-**Updated:** 2026-08-01
+**Updated:** 2026-08-03
 
 **Branch:** `main`
 
-**Status:** All five gameplay phases are implemented. Phase 5 local QA and the owner-supplied Mitch
-cutout, opening-evasion, viewport-fit, title-cover, and footer-border updates are locally verified;
-no deployment was performed.
+**Status:** All five gameplay phases are implemented. Phase 5 local QA, the owner-supplied Mitch
+cutout/hunt polish, and a self-contained Slack-share build are locally verified; no deployment was
+performed.
 
 ## Non-negotiables
 
@@ -46,6 +46,8 @@ run `npm run verify` before an implementation commit, and push only directly to 
 - The game shell now fills its usable viewport height without exceeding it; the 16:10 stage scales
   down before it can push the HUD or footer below the viewport. The title vignette matches the
   cutout-head turtle treatment, and the footer has a visible full-width top edge.
+- `npm run build:standalone` writes ignored `release/wheres-mitch-standalone.html` for Slack-style
+  sharing. It embeds the CSS, classic game IIFE, favicon, and Mitch PNG in one direct-file artifact.
 - `dist/` remains generated and ignored. `npm run build` recreates it.
 
 ## Current verification state
@@ -68,6 +70,11 @@ matrix, Chrome/Firefox hosted smoke, and Chrome/Firefox direct-file smoke. The c
 includes the relative `assets/mitch-head.png` file and rejects remote or unexpected requests. The
 older local ZIP predates this asset update and was intentionally not regenerated.
 
+On 2026-08-03, `npm run verify` passed after adding the single-file share build and its encoded
+favicon guard. The direct-file matrix now runs four checks: the normal `dist/index.html` and the
+single standalone HTML each complete catch, escape, restart, and settings flows in Chrome and
+Firefox with zero remote requests or console/page errors.
+
 ## Known release-review boundaries
 
 - Playwright WebKit cannot launch on this macOS 14 ARM environment because its available engine is
@@ -89,7 +96,8 @@ older local ZIP predates this asset update and was intentionally not regenerated
 | Release polish | `e26486f` | Local storage, accessibility/responsiveness, artifact/browser QA |
 | Local package | ignored output | `wheres-mitch-v1.0.0.zip`, checksum verified, extracted file smoke passed |
 | Mitch cutout, hunt, and viewport tuning | `d723b7e` | Owner-supplied local head, original green/gold shell, dense/fast opening, full-height no-scroll game shell, full local verification |
-| Cover and footer polish | this commit | Title uses the new cutout-head turtle; footer top border restored; full local verification |
+| Cover and footer polish | `f8ce063` | Title uses the new cutout-head turtle; footer top border restored; full local verification |
+| Single-file share build | this commit | One offline HTML embeds CSS, game, favicon, and Mitch PNG for Slack download; direct-file Chrome/Firefox smoke passes |
 
 ## Resume order
 
